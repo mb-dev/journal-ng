@@ -1,0 +1,16 @@
+{
+  "name": "mbdev-finance",
+  "version": "0.3.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components"
+  ],
+  "dependencies": {
+    "mbdev-core": "https://github.com/mb-dev/mbdev-core.git"
+  },
+  "resolutions": {
+    "jquery": "2.0.3",
+    "angular": "1.2.11"
+  }
+}
