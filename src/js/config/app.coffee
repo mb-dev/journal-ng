@@ -11,8 +11,7 @@ App = angular.module('app', [
   'app.services'
   'ngRoute'
   'angularMoment'
-  'ui.select2',
-  'fileSystem',
+  'ui.select2'
   'siyfion.sfTypeahead'
   'checklist-model'
 ])
@@ -30,22 +29,20 @@ App.config ($routeProvider, $locationProvider) ->
     , 5000
     db
 
-  resolveFDb = (tableList) ->
-    {
-      db: (fdb) -> 
-        fdb.getTables(tableList(fdb)).then -> authAndCheckData(tableList, fdb)
-    }
-
   resolveMDb = (tableList) ->
     {
       db: (mdb) -> 
-        mdb.getTables(tableList(mdb)).then -> authAndCheckData(tableList, mdb)
+        mdb.getTables(tableList(mdb)).then -> 
+          authAndCheckData(tableList, mdb)
+        , (failure) ->
+          $injector = angular.element('body').injector()
+          $injector.get('$rootScope').$broadcast('auth_fail', failure)
     }
 
   memoryNgAllDb = (mdb) -> [mdb.tables.memories, mdb.tables.events, mdb.tables.people, mdb.tables.categories]
   
   $routeProvider
-    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController'})
+    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: resolveMDb(memoryNgAllDb)})
 
     # memories
     .when('/journal/:year/:month', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: resolveMDb(memoryNgAllDb) })
@@ -86,44 +83,45 @@ App.config ($routeProvider, $locationProvider) ->
   $locationProvider.html5Mode(true)
 
 App.run ($rootScope, $location, $injector, $timeout, storageService) ->
-  $rootScope.appName = 'memoryNg'
+  redirectOnFailure = (failure) ->
+    if failure.reason == 'not_logged_in'
+      $location.path '/login'
+    else if failure.reason == 'missing_key'
+      $location.path '/key'
+
+  $rootScope.appName = 'Journal'
+  $rootScope.domain = 'journal'
+  storageService.setAppName($rootScope.appName, $rootScope.domain)
 
   $rootScope.$on "$routeChangeError", (event, current, previous, rejection) ->
-    if rejection.status == 403 && rejection.data.reason == 'not_logged_in'
-      $location.path '/login'
-
-    if rejection.status == 403 && rejection.data.reason == 'missing_key'
-      $location.path '/key'
+    if rejection.status == 403 && rejection.data.reason
+      redirectOnFailure(rejection.data)
   
   $rootScope.$on '$routeChangeStart', ->
     $rootScope.currentLocation = $location.path()
-    $sessionStorage = $injector.get('$sessionStorage')
-    if $sessionStorage.successMsg
-      $rootScope.successMsg = $sessionStorage.successMsg
-    if $sessionStorage.noticeMsg
-      $rootScope.noticeMsg = $sessionStorage.noticeMsg
-    $sessionStorage.successMsg = null
-    $sessionStorage.noticeMsg = null
+    
+    if storageService.getSuccessMsg()
+      $rootScope.successMsg = storageService.getSuccessMsg()
+    if storageService.getNoticeMsg()
+      $rootScope.noticeMsg = storageService.getNoticeMsg()
+    storageService.clearMsgs()
     $rootScope.userDetails = storageService.getUserDetails()
+    $rootScope.loggedIn = $rootScope.userDetails?
     if $rootScope.userDetails
       $rootScope.userDetails.firstName = $rootScope.userDetails.name.split(' ')[0]
 
-  $rootScope.$on 'auth_fail', ->
-    $rootScope.flashNotice('You were logged out on the server, please login again')
-    $location.path '/login'
+  $rootScope.$on 'auth_fail', (event, failure) ->
+    if failure.data.reason
+      redirectOnFailure(failure.data)
 
   $rootScope.isActive = (urlPart) =>
     $location.path().indexOf(urlPart) > 0
 
   $rootScope.flashSuccess = (msg) ->
-    $sessionStorage = $injector.get('$sessionStorage')
-    $sessionStorage.successMsg = msg
+    storageService.setSuccessMsg(msg)
 
   $rootScope.flashNotice = (msg) ->
-    $sessionStorage = $injector.get('$sessionStorage')
-    $sessionStorage.noticeMsg = msg
+    storageService.setNoticeMsg(msg)
 
   $rootScope.$on '$viewContentLoaded', ->
-    $sessionStorage = $injector.get('$sessionStorage')
-    $sessionStorage.successMsg = null
-    $sessionStorage.errorMsg = null  
+    storageService.clearMsgs()

@@ -1,4 +1,4 @@
-angular.module('app.services', ['ngStorage'])
+angular.module('app.services', [])
 angular.module('app.importers', [])
 angular.module('app.controllers', ['app.services'])
 angular.module('app.filters', [])

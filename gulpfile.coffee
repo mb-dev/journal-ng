@@ -35,7 +35,7 @@ gulp.task 'build-views', ->
 
 gulp.task 'build-js', ->
   gulp.src(paths.scripts)
-    .pipe(gulpif(/[.]coffee$/, coffee({bare: true}))).on('error', gutil.log)
+    .pipe(gulpif(/[.]coffee$/, coffee({bare: true}).on('error', gutil.log)))
     .pipe(concat('app.js'))
     .pipe(gulp.dest('public/js'))
 

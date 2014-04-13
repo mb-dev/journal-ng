@@ -18,7 +18,7 @@ nav.navbar-default(role='navigation')
         a(href='/people') People
       li(ng-class="{active: isActive('events')}")
         a(href='/events') Events
-    ul.nav.navbar-nav.navbar-right
+    ul.nav.navbar-nav.navbar-right(ng-if='loggedIn')
       li.dropdown
         a.dropdown-toggle(href='#', data-toggle='dropdown')
           | Welcome {{$root.userDetails.firstName}}!
@@ -33,3 +33,24 @@ nav.navbar-default(role='navigation')
             a(href='/logout') 
               i.fa.fa-power-off.fa-fw.fa-sr
               | Logout
+    ul.nav.navbar-nav.navbar-right(ng-if='!loggedIn')
+      li.dropdown
+        a.dropdown-toggle(href='#', data-toggle='dropdown')
+          | Welcome Guest
+          b.caret
+        ul.dropdown-menu
+          li
+            a(href='/login') 
+              i.fa.fa-sign-in.fa-fw.fa-sr
+              | Login
+          li.divider
+          li
+            a(href='/register') 
+              i.fa.fa-pencil-square-o.fa-fw.fa-sr
+              | Register
+div.alert.alert-success(ng-if="successMsg && successMsg.length > 0")
+  span.fa-stack.fa-lg
+    i.fa.fa-circle.fa-stack-2x
+    i.fa.fa-check.fa-stack-1x.fa-inverse
+  |&nbsp;
+  span {{$root.successMsg}}

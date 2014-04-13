@@ -106,7 +106,6 @@ angular.module('app.services')
       getTables: (tableList, forceRefreshAll) =>
         defer = $q.defer()
         db.getTables(tableList, forceRefreshAll).then((db) =>
-          $rootScope.user = accessFunc.user()
           defer.resolve(accessFunc)
         , (err) =>
           defer.reject(err)
