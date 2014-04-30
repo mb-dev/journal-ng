@@ -63,4 +63,5 @@ gulp.task 'watch', ->
   gulp.watch(paths.styles, ['build-css']);
   gulp.watch(paths.views, ['build-views']);
 
-gulp.task 'start', ['copy-core', 'build-js', 'build-css', 'build-views', 'watch']
+gulp.task 'build', ['copy-core', 'build-js', 'build-css', 'build-views']
+gulp.task 'start', ['start', 'watch']
