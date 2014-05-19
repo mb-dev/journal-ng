@@ -1,3 +1,14 @@
 ng-include(src="'/partials/common/memory_header.html'")
-.well.row 
+.main_page.index_page.container(ng-show="!loggedIn")
+  .jumbotron
+    .container
+      h2 Welcome to Journal!
+      p My side project to have a better journal online. With ability to link items to categories and people.
+
+  .container
+    h2 Features:
+    ul
+      li TBD
+
+.main_page.index_page.container(ng-show="loggedIn")
   !Welcome to Journal!

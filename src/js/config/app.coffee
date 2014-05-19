@@ -9,6 +9,9 @@ App = angular.module('app', [
   'app.directives'
   'app.filters'
   'app.services'
+  'core.controllers'
+  'core.directives'
+  'core.filters'
   'ngRoute'
   'angularMoment'
   'ui.select2'
@@ -17,32 +20,37 @@ App = angular.module('app', [
 ])
 
 App.config ($routeProvider, $locationProvider) ->
-  authAndCheckData = (tableList, db) ->
+  authAndCheckData = (tableList, db, storageService, $rootScope) ->
     setTimeout ->
-      $injector = angular.element('ng-view').injector()
-      storageService = $injector.get('storageService')
       if storageService.isAuthenticateTimeAndSet()
-        db.authAndCheckData(tableList(db)).then (ok) ->
+        db.authAndCheckData(tableList).then (ok) ->
           coffeescript_needs_this_line = true
         , (failure) ->
-          $injector.get('$rootScope').$broadcast('auth_fail', failure)
+          console.log 'failed to get latest data', failure
+          $rootScope.$broadcast('auth_fail', failure)
     , 5000
     db
 
-  resolveMDb = (tableList) ->
+  resolveMDb = (tableList, allowLoggedOut) ->
     {
-      db: (mdb) -> 
-        mdb.getTables(tableList(mdb)).then -> 
-          authAndCheckData(tableList, mdb)
-        , (failure) ->
-          $injector = angular.element('body').injector()
-          $injector.get('$rootScope').$broadcast('auth_fail', failure)
+      db: ($q, mdb, storageService, $rootScope) -> 
+        defer = $q.defer()
+        if allowLoggedOut && !storageService.isUserExists()
+          defer.resolve(null)
+        else
+          mdb.getTables(tableList(mdb)).then -> 
+            authAndCheckData(Object.keys(mdb.tables), mdb, storageService, $rootScope)
+            defer.resolve(mdb)
+          , (err) ->
+            defer.reject(err)
+        defer.promise
+
     }
 
   memoryNgAllDb = (mdb) -> [mdb.tables.memories, mdb.tables.events, mdb.tables.people, mdb.tables.categories]
   
   $routeProvider
-    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: resolveMDb(memoryNgAllDb)})
+    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: resolveMDb(memoryNgAllDb, true)})
 
     # memories
     .when('/journal/:year/:month', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: resolveMDb(memoryNgAllDb) })
@@ -69,10 +77,8 @@ App.config ($routeProvider, $locationProvider) ->
     .when('/people/:itemId', {templateUrl: '/partials/people/show.html', controller: 'PeopleShowController', resolve: resolveMDb(memoryNgAllDb) })
 
     .when('/login_success', template: 'Loading...', controller: 'LoginOAuthSuccessController')
-    .when('/login', {templateUrl: '/partials/user/login.html', controller: 'UserLoginController'})
-    .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController'})
-    .when('/register', {templateUrl: '/partials/user/register.html', controller: 'UserLoginController'})
-    .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController' })
+    .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  {db: (mdb) -> mdb}})
+    .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController', resolve:  {db: (mdb) -> mdb} })
     .when('/edit_profile', {templateUrl: '/partials/user/edit_profile.html', controller: 'UserEditProfileController'})
     .when('/logout', {template: 'Logging out...', controller: 'UserLogoutController'})
 
@@ -82,19 +88,22 @@ App.config ($routeProvider, $locationProvider) ->
   # Without server side support html5 must be disabled.
   $locationProvider.html5Mode(true)
 
-App.run ($rootScope, $location, $injector, $timeout, storageService) ->
+App.run ($rootScope, $location, $injector, $timeout, storageService, userService) ->
   redirectOnFailure = (failure) ->
     if failure.reason == 'not_logged_in'
-      $location.path '/login'
+      storageService.onLogout()
+      $location.path '/?refresh'
     else if failure.reason == 'missing_key'
       $location.path '/key'
 
   $rootScope.appName = 'Journal'
   $rootScope.domain = 'journal'
+  $rootScope.headerPath = '/partials/common/memory_header.html'
+  $rootScope.loginUrl = userService.oauthUrl($rootScope.domain)
   storageService.setAppName($rootScope.appName, $rootScope.domain)
 
   $rootScope.$on "$routeChangeError", (event, current, previous, rejection) ->
-    if rejection.status == 403 && rejection.data.reason
+    if rejection.data.reason
       redirectOnFailure(rejection.data)
   
   $rootScope.$on '$routeChangeStart', ->
@@ -116,12 +125,14 @@ App.run ($rootScope, $location, $injector, $timeout, storageService) ->
 
   $rootScope.isActive = (urlPart) =>
     $location.path().indexOf(urlPart) > 0
-
   $rootScope.flashSuccess = (msg) ->
     storageService.setSuccessMsg(msg)
-
   $rootScope.flashNotice = (msg) ->
     storageService.setNoticeMsg(msg)
+  $rootScope.showSuccess = (msg) ->
+    $rootScope.successMsg = msg
+  $rootScope.showError = (msg) ->
+    $rootScope.errorMsg = msg
 
   $rootScope.$on '$viewContentLoaded', ->
     storageService.clearMsgs()

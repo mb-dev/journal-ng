@@ -8,7 +8,7 @@ class MemoriesCollection extends Collection
         date = moment(item.date)
         return false if !(date.month() == filter.date.month && date.year() == filter.date.year)
       if filter.onlyParents
-        return false if !item.parentMemoryId && (!item.events || item.events.length == 0)
+        return false if item.parentMemoryId || (item.events && item.events.length > 0)
       true
     )
     @sortLazy(results, sortColumns)
@@ -99,19 +99,14 @@ angular.module('app.services')
         tables.people
       categories: ->
         tables.categories
-      user: ->
-        db.user()
+      config: ->
+        {}
+      createAllFiles: (tableNames) ->
+        db.createAllFiles(tableNames)
       authAndCheckData: (tableList) =>
         db.authAndCheckData(tableList)
       getTables: (tableList, forceRefreshAll) =>
-        defer = $q.defer()
-        db.getTables(tableList, forceRefreshAll).then((db) =>
-          defer.resolve(accessFunc)
-        , (err) =>
-          defer.reject(err)
-        )
-        defer.promise
-
+        db.getTables(tableList, forceRefreshAll)
       saveTables: (tableList, forceServerCleanAndSaveAll) ->
         db.saveTables(tableList, forceServerCleanAndSaveAll)
       dumpAllCollections: (tableList) -> 

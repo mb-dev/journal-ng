@@ -5,6 +5,10 @@ ng-include(src="'/partials/common/memory_header.html'")
     span.col-xs-6.current_month {{currentDate | amDateFormat:'MMMM, YYYY'}}
     a.col-xs-3.next_month(ng-click='nextMonth()', href='#') Next &gt;&gt;
     
+  .new.row.btn-toolbar.top
+    a.btn.btn-primary.add_event(ng-href='/events/new?date={{currentDate.valueOf()}}') Add Event  
+    a.btn.btn-primary.add_memory(ng-href='/memories/new?date={{currentDate.valueOf()}}') Add Memory
+
   .main_list.list-group.compact-list.row
     div(ng-repeat='date in dates').col-xs-12
       .list-group-item.row.header

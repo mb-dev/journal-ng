@@ -52,7 +52,7 @@ angular.module('app.controllers')
 
       onSuccess = -> 
         memoryDate = moment($scope.item.date)
-        $location.path($routeParams.returnto || '/memories/' + memoryDate.format('YYYY/MM'))
+        $location.path($routeParams.returnto || '/journal/' + memoryDate.format('YYYY/MM'))
       saveTables = -> db.saveTables([db.tables.memories, db.tables.categories])
       saveTables().then(onSuccess, errorReporter.errorCallbackToScope($scope))
 
@@ -79,7 +79,7 @@ angular.module('app.controllers')
           $location.path('/events/' + $scope.item.events[0])
         else
           date = moment($scope.item.events[0])
-          $location.path('/memories/' + date.year().toString() + '/' + date.month().toString())
+          $location.path('/journal/' + date.year().toString() + '/' + date.month().toString())
 
   .controller 'MemoriesAddMentionController', ($scope, $routeParams, $location, db) ->
     associateCheck = null
