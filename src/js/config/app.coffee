@@ -44,7 +44,17 @@ App.config ($routeProvider, $locationProvider) ->
           , (err) ->
             defer.reject(err)
         defer.promise
+    }
 
+  loadIdbCollections = ->
+    {
+      jdb: ($q, journaldb) ->
+        defer = $q.defer()
+        journaldb.loadTables().then ->
+          defer.resolve(journaldb)
+        , (err) ->
+          defer.reject(err)
+        defer.promise
     }
 
   memoryNgAllDb = (mdb) -> [mdb.tables.memories, mdb.tables.events, mdb.tables.people, mdb.tables.categories]
@@ -76,6 +86,11 @@ App.config ($routeProvider, $locationProvider) ->
     .when('/people/', {templateUrl: '/partials/people/index.html', controller: 'PeopleIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
     .when('/people/:itemId', {templateUrl: '/partials/people/show.html', controller: 'PeopleShowController', resolve: resolveMDb(memoryNgAllDb) })
 
+    .when('/schedule/:itemId/edit', {templateUrl: '/partials/schedule/form.html', controller: 'ScheduleFormController', resolve: loadIdbCollections() })
+    .when('/schedule/:year/:month', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+    .when('/schedule/:itemId', {templateUrl: '/partials/schedule/show.html', controller: 'ScheduleShowController', resolve: loadIdbCollections() })
+    .when('/schedule/', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+
     .when('/login_success', template: 'Loading...', controller: 'LoginOAuthSuccessController')
     .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  {db: (mdb) -> mdb}})
     .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController', resolve:  {db: (mdb) -> mdb} })
@@ -88,7 +103,7 @@ App.config ($routeProvider, $locationProvider) ->
   # Without server side support html5 must be disabled.
   $locationProvider.html5Mode(true)
 
-App.run ($rootScope, $location, $injector, $timeout, storageService, userService) ->
+App.run ($rootScope, $location, $injector, $window, $timeout, storageService, userService) ->
   redirectOnFailure = (failure) ->
     if failure.reason == 'not_logged_in'
       storageService.onLogout()
@@ -133,6 +148,8 @@ App.run ($rootScope, $location, $injector, $timeout, storageService, userService
     $rootScope.successMsg = msg
   $rootScope.showError = (msg) ->
     $rootScope.errorMsg = msg
+  $rootScope.setTitle = (title) ->
+    $window.document.title = $rootScope.appName + ' - ' + title
 
   $rootScope.$on '$viewContentLoaded', ->
     storageService.clearMsgs()

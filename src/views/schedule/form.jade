@@ -1,0 +1,28 @@
+ng-include(src="'/partials/common/memory_header.html'")
+.schedule_form.container
+  .error {{error}}
+  .panel.panel-default
+    .panel-heading
+      h4.panel-title {{title}}
+    form.panel-body.form-horizontal(role='form')
+      .form-group
+        label.col-xs-4.col-sm-2.control-label Title
+        .col-xs-8.col-sm-10
+          input.form-control(type='text', placeholder='Title', ng-model='item.title')
+      .form-group
+        label.col-xs-4.col-sm-2.control-label Date
+        .col-xs-8.col-sm-10
+          input.form-control(pickadate, type='text', placeholder='Date', ng-model='item.date', unix-date-format='')
+      .form-group
+        label.col-xs-4.col-sm-2.control-label Categories
+        .col-xs-8.col-sm-10
+          select(ng-model='item.category1', selectize="strings", all-items="categories")
+            option(value='{{item.category1}}', selected="true") {{item.category1}}
+          select(ng-model='item.category2', selectize="strings", all-items="categories")
+            option(value='{{item.category2}}', selected="true") {{item.category1}}
+          select(ng-model='item.category3', selectize="strings", all-items="categories")
+            option(value='{{item.category3}}', selected="true") {{item.category1}}
+
+      .btn-toolbar
+        button.btn.btn-default(ng-click="onSubmit(true)") Submit &amp; Next
+        button.btn.btn-danger(ng-click="onIgnore(true)") Ignore &amp; Next

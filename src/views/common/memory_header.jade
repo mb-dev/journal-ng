@@ -18,6 +18,8 @@ nav.navbar-default(role='navigation')
         a(href='/people') People
       li(ng-class="{active: isActive('events')}")
         a(href='/events') Events
+      li(ng-class="{active: isActive('schedule')}")
+        a(href='/schedule') Schedule
     ul.nav.navbar-nav.navbar-right(ng-if='loggedIn')
       li.dropdown
         a.dropdown-toggle(href='#', data-toggle='dropdown')
