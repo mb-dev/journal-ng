@@ -8,20 +8,18 @@ gulpif = require('gulp-if')
 spawn = require('child_process').spawn
 path = require('path');
 debug = require('gulp-debug');
+sourcemaps = require('gulp-sourcemaps')
 
 paths = {}
 paths.scripts = [
               "src/js/config/modules.coffee"
-              "bower_components/mbdev-core/src/js/db.coffee"
-              "src/js/config/app-db.coffee"
-              "bower_components/mbdev-core/src/js/utils.coffee"
-              "bower_components/mbdev-core/src/js/user/user.coffee"
-              "src/js/categories/categories.coffee"
-              "src/js/events/events.coffee"
-              "src/js/home/home.coffee"
-              "src/js/journal/journal.coffee"
-              "src/js/memories/memories.coffee"
-              "src/js/people/people.coffee"
+              "bower_components/mbdev-core/dist/js/core.js"
+              "src/js/services/memorydb.coffee"
+              "src/js/services/journaldb.coffee"
+
+              "src/js/models/**/*.coffee"
+              "src/js/controllers/**/*.coffee"
+
               "src/js/config/app.coffee"
             ]
 paths.styles_base = 'bower_components/mbdev-core/src/css/'
@@ -30,13 +28,15 @@ paths.views = ['./src/views/**/*.jade', 'bower_components/mbdev-core/src/views/*
 
 gulp.task 'build-views', ->
   gulp.src(paths.views)
-    .pipe(jade())
+    .pipe(jade().on('error', gutil.log))
     .pipe(gulp.dest('./public/partials'))
 
 gulp.task 'build-js', ->
   gulp.src(paths.scripts)
+    .pipe(sourcemaps.init())
     .pipe(gulpif(/[.]coffee$/, coffee({bare: true}).on('error', gutil.log)))
     .pipe(concat('app.js'))
+    .pipe(sourcemaps.write())
     .pipe(gulp.dest('public/js'))
 
 gulp.task 'build-css', ->

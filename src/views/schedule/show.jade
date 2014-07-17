@@ -1,0 +1,18 @@
+ng-include(src="'/partials/common/memory_header.html'")
+.accounts_show.container.show_page
+  .panel.panel-default.row
+    .panel-heading
+      .btns-parent.pull-right
+        a.btn.btn-default.btn-sm.edit(ng-href='/schedule/{{item.id}}/edit?returnto={{currentLocation}}') Edit  
+        a.btn.btn-default.btn-sm.delete(ng-confirm-click='Are you sure you want to delete {{item.title}}?', confirmed-click='deleteItem()') Delete
+      h4.panel-title Schedule Details
+    .panel-body.as-prop-columns.col-xs-12
+      .row
+        .left-pane Title
+        .right-pane {{item.title}}
+      .row
+        .left-pane Date
+        .right-pane {{item.date | unixLocalDate}} - {{item.duration}} hours
+      .row
+        .left-pane Categories
+        .right-pane {{item.category1}} {{item.category2}} {{item.category3}}
