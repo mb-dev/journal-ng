@@ -1,0 +1,25 @@
+ng-include(src="'/partials/common/memory_header.html'")
+.memories_index.container.index_page
+  
+  .month-nav.row.well.wells-sm
+    a.col-xs-3.prev_month(ng-click='prevMonth()', href='#') &lt;&lt; Prev
+    span.col-xs-6.current_month {{currentDate | amDateFormat:'MMMM, YYYY'}}
+    a.col-xs-3.next_month(ng-click='nextMonth()', href='#') Next &gt;&gt;
+
+
+  form.row.new_container
+    .form-group.col-xs-10
+      input.form-control(type="text", ng-model="newTask.title")
+    button.btn.btn-primary.col-xs-2.add_task(ng-click='onAddTask()') Add Task
+
+
+  ul.document_list
+    li.item(ng-repeat='item in groupedItems')
+      .header.compact(ng-if="item.type == 'header'")
+        {{item.date | dateIntFormat}}:
+      .regular(ng-if="item.type == 'item'", ng-class="{completed: item.value.completed}")
+        a(ng-click="onChangeComplete(item.value)", href='')
+          i.fa(ng-class="{'fa-square-o': !item.value.completed, 'fa-check-square-o': item.value.completed}")
+        | &nbsp; 
+        a(ng-click="editItem(item.value)", href='')
+          {{item.value.title}}

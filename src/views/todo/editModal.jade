@@ -1,0 +1,28 @@
+.modal.fade.in(tabindex="-1")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', ng-click="$hide()")
+          span(aria-hidden='true') &times;
+          span.sr-only Close
+        h4.modal-title {{title}}
+      .modal-body
+        .panel.panel-default
+          form.panel-body.form-horizontal(role='form')
+            .form-group
+              label.col-xs-4.col-sm-2.control-label Title
+              .col-xs-8.col-sm-10
+                input.form-control(type='text', placeholder='Title', ng-model='item.title')
+            .form-group
+              label.col-xs-4.col-sm-2.control-label Date
+              .col-xs-8.col-sm-10
+                input.form-control(pickadate, type='text', placeholder='Date', ng-model='item.dates[0]', date-int-formatter='')
+            .form-group
+              .col-xs-offset-2.col-xs-10
+                .check-box
+                  label
+                    input(type="checkbox", ng-model="item.completed") 
+                    | &nbsp; Complete
+      .modal-footer
+        button.btn.btn-default(type='button', ng-click="$hide()") Close
+        button.btn.btn-primary(type='button', ng-click="saveChanges()") Save changes
