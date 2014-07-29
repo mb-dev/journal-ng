@@ -16,6 +16,7 @@ App = angular.module('app', [
   'angularMoment'
   'ui.select2'
   'siyfion.sfTypeahead'
+  'mgcrea.ngStrap.modal'
   'checklist-model'
 ])
 
@@ -90,6 +91,8 @@ App.config ($routeProvider, $locationProvider) ->
     .when('/schedule/:year/:month', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
     .when('/schedule/:itemId', {templateUrl: '/partials/schedule/show.html', controller: 'ScheduleShowController', resolve: loadIdbCollections() })
     .when('/schedule/', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+
+    .when('/todo/', {templateUrl: '/partials/todo/index.html', controller: 'ToDoIndexController', reloadOnSearch: false })
 
     .when('/login_success', template: 'Loading...', controller: 'LoginOAuthSuccessController')
     .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  {db: (mdb) -> mdb}})

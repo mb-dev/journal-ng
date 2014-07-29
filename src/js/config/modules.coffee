@@ -1,5 +1,5 @@
 angular.module('app.services', ['core.services'])
 angular.module('app.importers', [])
-angular.module('app.controllers', ['app.services'])
+angular.module('app.controllers', ['app.services', 'mgcrea.ngStrap.modal'])
 angular.module('app.filters', [])
 angular.module('app.directives', ['app.services', 'app.filters'])
