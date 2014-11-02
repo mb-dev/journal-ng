@@ -1,12 +1,13 @@
 angular.module('app.controllers')
   .controller 'PeopleIndexController', ($scope, $routeParams, $location, db) ->
-    $scope.items = db.people().getAll().groupBy((item) -> item.categories[0]).toObject()
-    $scope.categories = Object.keys($scope.items).sort()
+    db.people().getAll().then (people) -> $scope.$apply -> 
+      $scope.items = _.groupBy(people, (item) -> item.categories[0])
+      $scope.categories = Object.keys($scope.items).sort()
 
     return
 
   .controller 'PeopleFormController', ($scope, $routeParams, $location, db, errorReporter) ->
-    $scope.allCategories = db.categories().getAll().toArray()
+    $scope.allCategories = db.preloaded.categories
 
     updateFunc = null
     if $location.$$url.indexOf('new') > 0
@@ -16,21 +17,26 @@ angular.module('app.controllers')
       updateFunc = db.people().insert
     else
       $scope.title = 'Edit person'
-      $scope.item = db.people().findById($routeParams.itemId)
-      updateFunc = db.people().editById
+      $scope.item = db.preloaded.item
+      updateFunc = db.people().updateById
+
+    onSuccess = -> $scope.$apply -> 
+      $location.path($routeParams.returnto || '/people/' + $scope.item.id)
 
     $scope.onSubmit = ->
-      updateFunc($scope.item)
       db.categories().findOrCreate($scope.item.categories)
-      db.categories().findOrCreate($scope.item.interests)
-
-      onSuccess = -> $location.path($routeParams.returnto || '/people/' + $scope.item.id)
-      saveTables = -> db.saveTables([db.tables.people, db.tables.categories])
-      saveTables().then(onSuccess, errorReporter.errorCallbackToScope($scope))
+      .then -> db.categories().findOrCreate($scope.item.interests)
+      .then -> updateFunc($scope.item)
+      .then -> db.saveTables([db.tables.people, db.tables.categories])
+      .then(onSuccess, errorReporter.errorCallbackToScope($scope))
 
   .controller 'PeopleShowController', ($scope, $routeParams, db) ->
-    $scope.item = db.people().findById($routeParams.itemId)
+    $scope.item = db.preloaded.item
 
-    $scope.events = db.events().getEventsByParticipantId($scope.item.id).toArray()
-    $scope.memories = db.memories().getMemoriesByPersonId($scope.item.id).toArray()
-    $scope.mentionedMemories = $scope.item.$mentioned().getAll().toArray()
+    if $scope.item
+      db.events().getEventsByParticipantId($scope.item.id).then (events) -> $scope.$apply ->
+        $scope.events = events
+      db.memories().getMemoriesByPersonId($scope.item.id).then (memories) -> $scope.$apply ->
+        $scope.memories = memories
+      db.memories().getMemoriesMentionedToPersonId($scope.item.id).then (memories) -> $scope.$apply ->
+        $scope.mentionedMemories = memories

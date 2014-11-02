@@ -1,11 +1,21 @@
-class EventsCollection extends Collection
+class EventsCollection extends IndexedDbCollection
+  getByDynamicFilter: (filter, sortColumns) ->
+    processResults = (events) =>
+      @sortLazy(events, sortColumns)
+
+    if filter.date
+      if filter.date.month? && filter.date.year?
+        minDate = moment({month: filter.date.month, year: filter.date.year}).startOf('month').valueOf()
+        maxDate = moment({month: filter.date.month, year: filter.date.year}).endOf('month').valueOf()
+
+      @dba.events.query('date').bound(minDate, maxDate).execute().then(processResults)
+    else if filter.participantId
+      @dba.events.query('participantIds').only(filter.participantId).execute().then(processResults)
+    else
+      throw new Error("invalid query")
+
   getItemsByMonthYear: (month, year, sortColumns) ->
-    results = Lazy(@collection).filter((item) -> 
-      date = moment(item.date)
-      date.month() == month && date.year() == year
-    )
-    @sortLazy(results, sortColumns)
+    @getByDynamicFilter({date: {month: month, year: year}})
 
   getEventsByParticipantId: (participantId, sortColumns) ->
-    results = Lazy(@collection).filter((item) -> item.participantIds && item.participantIds.indexOf(participantId) >= 0 )
-    @sortLazy(results, sortColumns)
+    @getByDynamicFilter({participantId}, sortColumns)

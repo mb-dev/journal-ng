@@ -14,9 +14,7 @@ App = angular.module('app', [
   'core.filters'
   'ngRoute'
   'angularMoment'
-  'ui.select2'
-  'siyfion.sfTypeahead'
-  'mgcrea.ngStrap.modal'
+  'mgcrea.ngStrap'
   'checklist-model'
 ])
 
@@ -24,68 +22,133 @@ App.config ($routeProvider, $locationProvider) ->
   authAndCheckData = (tableList, db, storageService, $rootScope) ->
     setTimeout ->
       if storageService.isAuthenticateTimeAndSet()
-        db.authAndCheckData(tableList).then (ok) ->
+        db.getTables(tableList).then (ok) ->
           coffeescript_needs_this_line = true
         , (failure) ->
-          console.log 'failed to get latest data', failure
           $rootScope.$broadcast('auth_fail', failure)
     , 5000
     db
 
-  resolveMDb = (tableList, allowLoggedOut) ->
+  loadIdbCollections = (otherFunctions = []) ->
     {
-      db: ($q, mdb, storageService, $rootScope) -> 
-        defer = $q.defer()
-        if allowLoggedOut && !storageService.isUserExists()
-          defer.resolve(null)
-        else
-          mdb.getTables(tableList(mdb)).then -> 
-            authAndCheckData(Object.keys(mdb.tables), mdb, storageService, $rootScope)
-            defer.resolve(mdb)
-          , (err) ->
-            defer.reject(err)
-        defer.promise
-    }
-
-  loadIdbCollections = ->
-    {
-      jdb: ($q, journaldb) ->
+      db: ($q, $route, journaldb, storageService, $rootScope) ->
         defer = $q.defer()
         journaldb.loadTables().then ->
-          defer.resolve(journaldb)
+          async.each otherFunctions, (func, callback) ->
+            func(journaldb, $route).then -> 
+              callback()
+            , (err) ->
+              console.log "Failed #{err}"
+          , (err) ->
+            defer.resolve(journaldb)
+          if storageService.isUserExists() and storageService.getEncryptionKey()
+            authAndCheckData(Object.keys(journaldb.tables), journaldb, storageService, $rootScope)
         , (err) ->
+          console.log "error loading"
           defer.reject(err)
         defer.promise
     }
 
-  memoryNgAllDb = (mdb) -> [mdb.tables.memories, mdb.tables.events, mdb.tables.people, mdb.tables.categories]
+  getResolvedPromise = ->
+    deferred = RSVP.defer()
+    deferred.resolve()
+    deferred.promise
+
+  loadCategories = (db) ->
+    db.categories().getAllKeys().then (categories) ->
+      db.preloaded.categories = categories
+
+  loadPeople = (db) ->
+    db.people().getAll().then (people) ->
+      db.preloaded.people = people
+
+  loadEventForMemory = (db, $route) ->
+    eventId = parseInt($route.current.params.eventId, 10)
+    if eventId
+      db.events().findById(eventId).then (event) ->
+        db.preloaded.event = event
+    else
+      getResolvedPromise()
+
+  loadParentMemoryForMemory = (db, $route) ->
+    parentMemoryId = parseInt($route.current.params.parentMemoryId, 10)
+    if parentMemoryId
+      db.memories().findById(parentMemoryId).then (parentMemory) ->
+        db.preloaded.parentMemory = parentMemory
+    else
+      getResolvedPromise()
+
+  loadMemory = (db, $route) ->
+    itemId = parseInt($route.current.params.itemId, 10)
+    db.memories().findById(itemId).then (item) ->
+      db.preloaded.item = item
+      db.preloaded.events = []
+      db.preloaded.people = []
+      db.preloaded.parentMemory = null
+
+      promise1 = getResolvedPromise()
+      promise2 = getResolvedPromise()
+      promise3 = getResolvedPromise()
+
+      if item.events and item.events.length > 0
+        promise1 = db.events().findByIds(item.events).then (events) ->
+          db.preloaded.events = events
+      
+      if item.people and item.people.length > 0
+        promise2 = db.people().findByIds(item.people).then (people) ->
+          db.preloaded.associatedPeople = people
+
+      if item.parentMemoryId
+        promise3 = db.memories().findById(item.parentMemoryId).then (memory) ->
+          db.preloaded.parentMemory = memory
+
+      RSVP.all([promise1, promise2])
+
+  loadEvent = (db, $route) ->
+    itemId = parseInt($route.current.params.itemId, 10)
+    db.events().findById(itemId).then (item) ->
+      db.preloaded.item = item
+      db.preloaded.participants = []
+
+      promise1 = getResolvedPromise()
+
+      if item.participantIds and item.participantIds.length > 0
+        promise1 = db.people().findByIds(item.participantIds).then (people) ->
+          db.preloaded.participants = people
+
+      RSVP.all([promise1])
+
+  loadPerson = (db, $route) ->
+    itemId = parseInt($route.current.params.itemId, 10)
+    db.people().findById(itemId).then (item) ->
+      db.preloaded.item = item
   
   $routeProvider
-    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: resolveMDb(memoryNgAllDb, true)})
+    .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: loadIdbCollections()})
 
     # memories
-    .when('/journal/:year/:month', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/journal/', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: resolveMDb(memoryNgAllDb) })
+    .when('/journal/:year/:month', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: loadIdbCollections() })
+    .when('/journal/', {templateUrl: '/partials/journal/index.html', controller: 'JournalIndexController', resolve: loadIdbCollections() })
 
-    .when('/categories/', {templateUrl: '/partials/categories/index.html', controller: 'CategoriesIndexController', resolve: resolveMDb(memoryNgAllDb) })
+    .when('/categories/', {templateUrl: '/partials/categories/index.html', controller: 'CategoriesIndexController', resolve: loadIdbCollections() })
 
-    .when('/memories/new', {templateUrl: '/partials/memories/form.html', controller: 'MemoriesFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/memories/addMention', {templateUrl: '/partials/memories/addMention.html', controller: 'MemoriesAddMentionController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/memories/:itemId/edit', {templateUrl: '/partials/memories/form.html', controller: 'MemoriesFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/memories/:year/:month', {templateUrl: '/partials/memories/index.html', controller: 'MemoriesIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
-    .when('/memories/:itemId', {templateUrl: '/partials/memories/show.html', controller: 'MemoriesShowController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/memories/', {templateUrl: '/partials/memories/index.html', controller: 'MemoriesIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
+    .when('/memories/new', {templateUrl: '/partials/memories/form.html', controller: 'MemoriesFormController', resolve: loadIdbCollections([loadCategories, loadPeople, loadEventForMemory, loadParentMemoryForMemory]) })
+    .when('/memories/addMention', {templateUrl: '/partials/memories/addMention.html', controller: 'MemoriesAddMentionController', resolve: loadIdbCollections() })
+    .when('/memories/:itemId/edit', {templateUrl: '/partials/memories/form.html', controller: 'MemoriesFormController', resolve: loadIdbCollections([loadCategories, loadPeople, loadMemory]) })
+    .when('/memories/:year/:month', {templateUrl: '/partials/memories/index.html', controller: 'MemoriesIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+    .when('/memories/:itemId', {templateUrl: '/partials/memories/show.html', controller: 'MemoriesShowController', resolve: loadIdbCollections([loadMemory]) })
+    .when('/memories/', {templateUrl: '/partials/memories/index.html', controller: 'MemoriesIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
 
-    .when('/events/new', {templateUrl: '/partials/events/form.html', controller: 'EventsFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/events/:itemId/edit', {templateUrl: '/partials/events/form.html', controller: 'EventsFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/events/:year/:month', {templateUrl: '/partials/events/index.html', controller: 'EventsIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
-    .when('/events/:itemId', {templateUrl: '/partials/events/show.html', controller: 'EventsShowController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/events/', {templateUrl: '/partials/events/index.html', controller: 'EventsIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
+    .when('/events/new', {templateUrl: '/partials/events/form.html', controller: 'EventsFormController', resolve: loadIdbCollections([loadCategories, loadPeople]) })
+    .when('/events/:itemId/edit', {templateUrl: '/partials/events/form.html', controller: 'EventsFormController', resolve: loadIdbCollections([loadCategories, loadPeople, loadEvent]) })
+    .when('/events/:year/:month', {templateUrl: '/partials/events/index.html', controller: 'EventsIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+    .when('/events/:itemId', {templateUrl: '/partials/events/show.html', controller: 'EventsShowController', resolve: loadIdbCollections([loadEvent]) })
+    .when('/events/', {templateUrl: '/partials/events/index.html', controller: 'EventsIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
 
-    .when('/people/new', {templateUrl: '/partials/people/form.html', controller: 'PeopleFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/people/:itemId/edit', {templateUrl: '/partials/people/form.html', controller: 'PeopleFormController', resolve: resolveMDb(memoryNgAllDb) })
-    .when('/people/', {templateUrl: '/partials/people/index.html', controller: 'PeopleIndexController', reloadOnSearch: false, resolve: resolveMDb(memoryNgAllDb) })
-    .when('/people/:itemId', {templateUrl: '/partials/people/show.html', controller: 'PeopleShowController', resolve: resolveMDb(memoryNgAllDb) })
+    .when('/people/new', {templateUrl: '/partials/people/form.html', controller: 'PeopleFormController', resolve: loadIdbCollections([loadCategories]) })
+    .when('/people/:itemId/edit', {templateUrl: '/partials/people/form.html', controller: 'PeopleFormController', resolve: loadIdbCollections([loadCategories, loadPerson]) })
+    .when('/people/', {templateUrl: '/partials/people/index.html', controller: 'PeopleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
+    .when('/people/:itemId', {templateUrl: '/partials/people/show.html', controller: 'PeopleShowController', resolve: loadIdbCollections([loadPerson]) })
 
     .when('/schedule/:itemId/edit', {templateUrl: '/partials/schedule/form.html', controller: 'ScheduleFormController', resolve: loadIdbCollections() })
     .when('/schedule/:year/:month', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })

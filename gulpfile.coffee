@@ -9,6 +9,7 @@ spawn = require('child_process').spawn
 path = require('path');
 debug = require('gulp-debug');
 sourcemaps = require('gulp-sourcemaps')
+plumber = require('gulp-plumber')
 
 paths = {}
 paths.scripts = [
@@ -36,6 +37,7 @@ gulp.task 'build-views', ->
 
 gulp.task 'build-js', ->
   gulp.src(paths.scripts)
+    .pipe(plumber())
     .pipe(sourcemaps.init())
     .pipe(gulpif(/[.]coffee$/, coffee({bare: true}).on('error', gutil.log)))
     .pipe(concat('app.js'))
