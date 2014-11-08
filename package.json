@@ -19,9 +19,10 @@
     "gulp-debug": "~0.3.0",
     "gulp-concat": "floridoo/gulp-concat#sourcemap_pipe2",
     "gulp-sourcemaps": "^0.4.4",
-    "gulp-util": "~2.2.14"
+    "gulp-util": "~2.2.14",
+    "gulp-plumber": "^0.6.6"
   },
   "devDependencies": {
-    "gulp-plumber": "^0.6.6"
+    
   }
 }
