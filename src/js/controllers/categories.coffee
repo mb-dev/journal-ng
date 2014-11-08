@@ -5,10 +5,10 @@ angular.module('app.controllers')
     db.memories().getAllParentMemories().then (memories) ->
       db.events().getAll().then (events) -> $scope.$apply ->
         memories.forEach (item) ->
-          item.categories.forEach (categoryName) ->
+          item.categories?.forEach (categoryName) ->
             items.push({categoryName: categoryName, type: 'memories', modifiedAt: item.modifiedAt, data: item, itemDate: item.date, date: moment(item.modifiedAt).format('L')})
         events.forEach (item) ->
-          item.categories.forEach (categoryName) ->
+          item.categories?.forEach (categoryName) ->
             items.push({categoryName: categoryName, type: 'events', modifiedAt: item.modifiedAt, data: item, itemDate: item.date, date: moment(item.modifiedAt).format('L')})
 
         categoryData = _.groupBy(items, 'categoryName')

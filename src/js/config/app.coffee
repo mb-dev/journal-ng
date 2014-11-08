@@ -155,11 +155,13 @@ App.config ($routeProvider, $locationProvider) ->
     .when('/schedule/:itemId', {templateUrl: '/partials/schedule/show.html', controller: 'ScheduleShowController', resolve: loadIdbCollections() })
     .when('/schedule/', {templateUrl: '/partials/schedule/index.html', controller: 'ScheduleIndexController', reloadOnSearch: false, resolve: loadIdbCollections() })
 
+    .when('/misc', {templateUrl: '/partials/misc/index.html', controller: 'MiscController', resolve: loadIdbCollections() })
+
     .when('/todo/', {templateUrl: '/partials/todo/index.html', controller: 'ToDoIndexController', reloadOnSearch: false })
 
     .when('/login_success', template: 'Loading...', controller: 'LoginOAuthSuccessController')
-    .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  {db: (mdb) -> mdb}})
-    .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController', resolve:  {db: (mdb) -> mdb} })
+    .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  loadIdbCollections() })
+    .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController', resolve:  loadIdbCollections() })
     .when('/edit_profile', {templateUrl: '/partials/user/edit_profile.html', controller: 'UserEditProfileController'})
     .when('/logout', {template: 'Logging out...', controller: 'UserLogoutController'})
 

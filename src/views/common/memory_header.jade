@@ -22,6 +22,8 @@ nav.navbar-default(role='navigation')
         a(href='/schedule') Schedule
       li(ng-class="{active: isActive('todo')}")
         a(href='/todo') Todo
+      li(ng-class="{active: isActive('misc')}")
+        a(href='/misc') Misc
     ul.nav.navbar-nav.navbar-right(ng-if='loggedIn')
       li.dropdown
         a.dropdown-toggle(href='#', data-toggle='dropdown')
