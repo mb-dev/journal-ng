@@ -10,13 +10,11 @@
     .form-group
       label.col-xs-4.col-sm-2.control-label Categories
       .col-xs-8.col-sm-10
-        select(ng-model='item.categories', selectize="stringsWithCreate", multiple)
-          option(ng-repeat='category in allCategories', value='{{category}}', ng-selected="{{item.categories.indexOf(category) >= 0}}") {{category}}
+        select(ng-model='item.categories', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
     .form-group
       label.col-xs-4.col-sm-2.control-label Associated People
       .col-xs-8.col-sm-10
-        select(ng-model='item.people', multiple, selectize="objectsWithIdName")
-          option(ng-repeat='person in allPeople', value='{{person.id}}', ng-selected="{{item.people.indexOf(person.id) >= 0}}") {{person.name}}
+        select(ng-model='item.people', multiple, selectize="objectsWithIdName", all-items="{{allPeople}}")
     .form-group
       label.col-xs-4.col-sm-2.control-label Title
       .col-xs-8.col-sm-10

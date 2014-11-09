@@ -17,8 +17,10 @@ angular.module('app.controllers')
 
   .controller 'MemoriesFormController', ($scope, $routeParams, $location, journaldb, errorReporter) ->
     db = journaldb
-    $scope.allCategories = db.preloaded.categories
-    $scope.allPeople = db.preloaded.people
+    db.categories().getAllKeys().then (categories) -> $scope.$apply ->
+      $scope.allCategories = db.preloaded.categories
+    db.people().getAll().then (people) ->
+      $scope.allPeople = people
     
     updateFunc = null
     if $location.$$url.indexOf('new') > 0
