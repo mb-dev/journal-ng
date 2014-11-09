@@ -15,7 +15,8 @@ angular.module('app.controllers')
 
     return
 
-  .controller 'MemoriesFormController', ($scope, $routeParams, $location, db, errorReporter) ->
+  .controller 'MemoriesFormController', ($scope, $routeParams, $location, journaldb, errorReporter) ->
+    db = journaldb
     $scope.allCategories = db.preloaded.categories
     $scope.allPeople = db.preloaded.people
     

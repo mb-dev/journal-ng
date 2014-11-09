@@ -1,0 +1,17 @@
+.modal.fade.in(tabindex="-1")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', ng-click="$hide()")
+          span(aria-hidden='true') &times;
+          span.sr-only Close
+        h4.modal-title {{title}}
+      .modal-body
+
+        ng-include(src="'/partials/memories/_form.html'", ng-controller="MemoriesFormController")
+
+
+      .modal-footer
+        button.btn.btn-default(type='button', ng-click="$hide()") Close
+        button.btn.btn-primary(type='button', ng-click="saveChanges()") Save changes
+        button.btn.btn-default(ng-click="$parent.newMemoryUsingModal()") Try again

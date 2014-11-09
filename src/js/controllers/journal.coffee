@@ -1,5 +1,5 @@
 angular.module('app.controllers')
-  .controller 'JournalIndexController', ($scope, $routeParams, $location, db) ->
+  .controller 'JournalIndexController', ($scope, $routeParams, $location, db, $modal) ->
     $scope.currentDate = moment()
     if $routeParams.month && $routeParams.year
       $scope.currentDate.year(+$routeParams.year).month(+$routeParams.month - 1)
@@ -20,5 +20,12 @@ angular.module('app.controllers')
       $scope.currentDate.add('months', -1)
       $location.path('/journal/' + $scope.currentDate.year().toString() + '/' + ($scope.currentDate.month()+1).toString())
     
+    $scope.newMemoryUsingModal = ->
+      db.categories().getAllKeys().then (categories) ->
+        db.preloaded.categories = categories
+        db.people().getAll().then (people) ->
+          db.preloaded.people = people
+          dialog = $modal({template: '/partials/memories/formDialog.html', show: true});
+          dialog.$scope.title = 'New Memory'
 
     return

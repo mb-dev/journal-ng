@@ -1,9 +1,9 @@
  angular.module('app.services')
   .factory 'godoClient', ($q, storageService, $http, $location, userService) ->
     tasks = []
-    godoServerUrl = if Lazy($location.host()).contains('local.com')
+    godoServerUrl = if $location.host().indexOf('local.com') >= 0
       'http://localhost:9000/api/godo'
-    else if Lazy($location.host()).contains('vagrant.com')
+    else if location.host().indexOf('vagrant.com') >= 0
       'http://api.moshebergman.vagrant.com/api/godo'
     else
       'https://api.moshebergman.com/api/godo'

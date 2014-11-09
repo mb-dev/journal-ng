@@ -7,7 +7,7 @@ ng-include(src="'/partials/common/memory_header.html'")
     
   .new.row.btn-toolbar.top
     a.btn.btn-primary.add_event(ng-href='/events/new?date={{currentDate.valueOf()}}') Add Event  
-    a.btn.btn-primary.add_memory(ng-href='/memories/new?date={{currentDate.valueOf()}}') Add Memory
+    a.btn.btn-primary.add_memory(ng-click='newMemoryUsingModal()') Add Memory
 
   .main_list.list-group.compact-list.row
     div(ng-repeat='date in dates').col-xs-12
