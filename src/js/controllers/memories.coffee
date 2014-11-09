@@ -19,7 +19,8 @@ angular.module('app.controllers')
     db = journaldb
     db.categories().getAllKeys().then (categories) -> $scope.$apply ->
       $scope.allCategories = db.preloaded.categories
-    db.people().getAll().then (people) ->
+    
+    db.people().getAll().then (people) -> $scope.$apply ->
       $scope.allPeople = people
     
     updateFunc = null

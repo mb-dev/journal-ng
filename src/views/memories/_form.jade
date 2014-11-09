@@ -11,6 +11,7 @@
       label.col-xs-4.col-sm-2.control-label Categories
       .col-xs-8.col-sm-10
         select(ng-model='item.categories', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
+          option(ng-repeat='category in allCategories', value='{{category}}', ng-selected="{{item.categories.indexOf(category) >= 0}}") {{category}}
     .form-group
       label.col-xs-4.col-sm-2.control-label Associated People
       .col-xs-8.col-sm-10
