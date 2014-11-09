@@ -58,7 +58,7 @@ angular.module('app.controllers')
 
   .controller 'MemoriesShowController', ($scope, $routeParams, db, $location) ->
     $scope.item = db.preloaded.item
-    $scope.people = db.preloaded.people
+    $scope.people = db.preloaded.associatedPeople
     $scope.events = db.preloaded.events
     $scope.parentMemory = db.preloaded.parentMemory
     db.memories().getItemsByParentMemoryId($scope.item.id).then (childMemories) -> $scope.$apply ->

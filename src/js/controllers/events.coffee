@@ -34,7 +34,7 @@ angular.module('app.controllers')
     else
       $scope.title = 'Edit event'
       $scope.item = db.preloaded.item
-      updateFunc = db.events().editById
+      updateFunc = db.events().updateById
 
     onSuccess = -> $location.path($routeParams.returnto || '/events/' + $scope.item.id)
 
