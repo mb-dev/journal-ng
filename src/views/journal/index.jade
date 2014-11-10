@@ -13,5 +13,5 @@ ng-include(src="'/partials/common/memory_header.html'")
     div(ng-repeat='date in dates').col-xs-12
       .list-group-item.row.header
         b {{date}}
-      a.list-group-item.fixed-row(ng-repeat='itemMeta in items[date]', ng-href="/{{itemMeta.type}}/{{item.id}}", ng-class="itemMeta.type", ng-init="item = itemMeta.data") 
+      a.list-group-item.fixed-row(ng-repeat='itemMeta in items[date]', href='', ng-click="showItemUsingModal(itemMeta.type, item)", ng-class="itemMeta.type", ng-init="item = itemMeta.data") 
         ng-include(src="'/partials/' + itemMeta.type + '/itemSmall.html'")

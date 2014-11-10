@@ -10,12 +10,11 @@
     .form-group
       label.col-xs-4.col-sm-2.control-label Categories
       .col-xs-8.col-sm-10
-        select(ng-model='item.categories', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
-          option(ng-repeat='category in allCategories', value='{{category}}', ng-selected="{{item.categories.indexOf(category) >= 0}}") {{category}}
+        input(type="string", ng-model='item.categories', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
     .form-group
       label.col-xs-4.col-sm-2.control-label Associated People
       .col-xs-8.col-sm-10
-        select(ng-model='item.people', multiple, selectize="objectsWithIdName", all-items="{{allPeople}}")
+        input(type="string", ng-model='item.people', multiple, selectize="strings", all-items="{{allPeople}}")
     .form-group
       label.col-xs-4.col-sm-2.control-label Title
       .col-xs-8.col-sm-10
@@ -28,4 +27,3 @@
       label.col-xs-4.col-sm-2.control-label Content
       .col-xs-8.col-sm-10
         textarea.form-control(autoresize, type='text', ng-model='item.content')
-    button.btn.btn-default(ng-click="onSubmit()") Submit

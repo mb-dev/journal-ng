@@ -26,7 +26,7 @@ ng-include(src="'/partials/common/memory_header.html'")
       .row
         .left-pane Categories
         .right-pane {{item.categories | joinBy}}
-      .row
+      .row(ng-if="!!people")
         .left-pane People
         .right-pane 
           a(ng-repeat='person in people', ng-href='/people/{{person.id}}')

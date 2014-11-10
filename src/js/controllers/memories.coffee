@@ -1,3 +1,18 @@
+objectSelectizeConverter = (collection, displayAttr) ->
+  collectionById = _.indexBy(collection, 'id')
+  collectionByDisplayAttr = _.indexBy(collection, displayAttr)
+  {
+    toDisplayAttr: (item, attr) ->
+      return unless item[attr]
+      item[attr] = item[attr].map (id) -> collectionById[id][displayAttr]
+
+    toIdCollection: (item, attr) ->
+      item[attr] = item[attr].map (display) -> collectionByDisplayAttr[display].id
+
+    allDisplayAttrs: ->
+      Object.keys(collectionByDisplayAttr)
+  }
+
 angular.module('app.controllers')
   .controller 'MemoriesIndexController', ($scope, $routeParams, $location, db) ->
     $scope.currentDate = moment()
@@ -18,24 +33,27 @@ angular.module('app.controllers')
   .controller 'MemoriesFormController', ($scope, $routeParams, $location, journaldb, errorReporter) ->
     db = journaldb
     db.categories().getAllKeys().then (categories) -> $scope.$apply ->
-      $scope.allCategories = db.preloaded.categories
+      $scope.allCategories = categories
     
+    peopleMapper = {}
     db.people().getAll().then (people) -> $scope.$apply ->
-      $scope.allPeople = people
+      peopleMapper = objectSelectizeConverter(people, 'name')  
+      $scope.allPeople = peopleMapper.allDisplayAttrs()
+      peopleMapper.toDisplayAttr($scope.item, 'people')
     
     updateFunc = null
-    if $location.$$url.indexOf('new') > 0
-      $scope.type = 'new'
-      $scope.title = 'New memory'
-      $scope.item = {date: moment().valueOf()}
-      updateFunc = db.memories().insert
-      $scope.item.people = [parseInt($routeParams.personId, 10)] if $routeParams.personId
-      $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date
-    else
+    if db.preloaded.item
       $scope.type = 'edit'
       $scope.title = 'Edit memory'
       $scope.item = db.preloaded.item
       updateFunc = db.memories().updateById
+    else
+      $scope.type = 'new'
+      $scope.title = 'New memory'
+      $scope.item = {date: moment().valueOf()}
+      updateFunc = db.memories().insert
+      $scope.item.people = parseInt($routeParams.personId, 10) if $routeParams.personId
+      $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date
 
     if $routeParams.eventId
       $scope.event = db.preloaded.event
@@ -52,10 +70,15 @@ angular.module('app.controllers')
       $scope.item.parentMemoryId = $scope.parentMemory.id
 
     onSuccess = -> $scope.$apply ->
-      memoryDate = moment($scope.item.date)
-      $location.path($routeParams.returnto || '/journal/' + memoryDate.format('YYYY/MM'))
+      if $scope.$hide?
+        $scope.$emit('itemEdited', $scope.item)
+        $scope.$hide()
+      else
+        memoryDate = moment($scope.item.date)
+        $location.path($routeParams.returnto || '/journal/' + memoryDate.format('YYYY/MM'))
 
     $scope.onSubmit = ->
+      peopleMapper.toIdCollection($scope.item, 'people')
       db.categories().findOrCreate($scope.item.categories)
       .then -> updateFunc($scope.item)
       .then -> db.saveTables([db.tables.memories, db.tables.categories]).then(onSuccess, errorReporter.errorCallbackToScope($scope))

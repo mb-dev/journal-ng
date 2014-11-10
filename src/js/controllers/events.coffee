@@ -20,36 +20,57 @@ angular.module('app.controllers')
 
     return
 
-  .controller 'EventsFormController', ($scope, $routeParams, $location, db, errorReporter) ->
-    $scope.allCategories = db.preloaded.categories
-    $scope.allPeople = db.preloaded.people
+  .controller 'EventsFormController', ($scope, $routeParams, $location, journaldb, errorReporter) ->
+    db = journaldb
+    db.categories().getAllKeys().then (categories) -> $scope.$apply ->
+      $scope.allCategories = categories
+    
+    peopleMapper = {}
+    db.people().getAll().then (people) -> $scope.$apply ->
+      peopleMapper = objectSelectizeConverter(people, 'name')  
+      $scope.allPeople = peopleMapper.allDisplayAttrs()
+      peopleMapper.toDisplayAttr($scope.item, 'participantIds')
+
     updateFunc = null
 
-    if $location.$$url.indexOf('new') > 0
+    if db.preloaded.item
+      $scope.title = 'Edit event'
+      $scope.item = db.preloaded.item
+      updateFunc = db.events().updateById
+    else
       $scope.title = 'New event'
       $scope.item = {date: moment().valueOf(), associatedMemories: []}
       updateFunc = db.events().insert
       $scope.item.participantIds = [parseInt($routeParams.personId, 10)] if $routeParams.personId
       $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date
-    else
-      $scope.title = 'Edit event'
-      $scope.item = db.preloaded.item
-      updateFunc = db.events().updateById
 
-    onSuccess = -> $location.path($routeParams.returnto || '/events/' + $scope.item.id)
+    onSuccess = -> 
+      $scope.$emit('itemEdited', $scope.item)
+      $scope.$hide()
 
     $scope.onSubmit = ->
+      peopleMapper.toIdCollection($scope.item, 'participantIds')
       db.categories().findOrCreate($scope.item.categories)
       .then -> updateFunc($scope.item)
       .then -> db.saveTables([db.tables.events, db.tables.categories]).then(onSuccess, errorReporter.errorCallbackToScope($scope))
 
-  .controller 'EventsShowController', ($scope, $routeParams, db) ->
+  .controller 'EventsShowController', ($scope, $routeParams, $location, journaldb) ->
+    db = journaldb
     $scope.item = db.preloaded.item
     $scope.participants = db.preloaded.participants
     db.memories().getItemsByEventId($scope.item.id).then (associatedMemories) -> $scope.$apply ->
       $scope.associatedMemories = associatedMemories
     db.memories().getMemoriesMentionedAtEventId($scope.item.id).then (mentionedMemories) -> $scope.$apply ->
       $scope.mentionedMemories = mentionedMemories
+
+    $scope.editItem = ->
+      if $scope.isInDialog()
+        $scope.$emit('editItem')
+      else
+        $location.path("/events/#{$scope.item.id}/edit?returnto=#{$scope.currentLocation}")
+
+    $scope.isInDialog = ->
+      $scope.$hide?
 
     $scope.deleteItem = () ->
       db.events().deleteById($scope.item.id)

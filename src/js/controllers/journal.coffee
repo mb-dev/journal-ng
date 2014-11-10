@@ -1,5 +1,5 @@
 angular.module('app.controllers')
-  .controller 'JournalIndexController', ($scope, $routeParams, $location, db, $modal) ->
+  .controller 'JournalIndexController', ($scope, $routeParams, $location, $timeout, db, $modal) ->
     $scope.currentDate = moment()
     if $routeParams.month && $routeParams.year
       $scope.currentDate.year(+$routeParams.year).month(+$routeParams.month - 1)
@@ -14,18 +14,35 @@ angular.module('app.controllers')
         $scope.items = _.groupBy(allItems, (item) -> moment(item.date).format('L'))
 
     $scope.nextMonth = ->
-      $scope.currentDate.add('months', 1)
+      $scope.currentDate.add(1, 'months')
       $location.path('/journal/' + $scope.currentDate.year().toString() + '/' + ($scope.currentDate.month()+1).toString())
     $scope.prevMonth = ->
-      $scope.currentDate.add('months', -1)
+      $scope.currentDate.add(-1, 'months')
       $location.path('/journal/' + $scope.currentDate.year().toString() + '/' + ($scope.currentDate.month()+1).toString())
     
-    $scope.newMemoryUsingModal = ->
-      db.categories().getAllKeys().then (categories) ->
-        db.preloaded.categories = categories
-        db.people().getAll().then (people) ->
-          db.preloaded.people = people
-          dialog = $modal({template: '/partials/memories/formDialog.html', show: true});
-          dialog.$scope.title = 'New Memory'
+    $scope.newMemoryUsingModal = ->      
+      db.preloaded.item = null
+      dialog = $modal({template: '/partials/memories/formDialog.html', show: true});
+
+    $scope.showItemUsingModal = (type, item) ->
+      db.preloaded.item = item
+      if type == 'events'
+        dialog = $modal({template: '/partials/events/showDialog.html', show: true});
+      dialog.$scope.$on 'editItem', (event) ->
+        dialog.$scope.$destroy()
+        $timeout -> 
+          $scope.editItemUsingModal(type, item)
+
+    $scope.editItemUsingModal = (type, item) ->
+      db.preloaded.item = angular.copy(item)
+      if type == 'memories'
+        dialog = $modal({template: '/partials/memories/formDialog.html', show: true});
+        dialog.$scope.$on 'itemEdited', (event, newItem) ->
+          angular.extend(item, newItem)
+      else if type == 'events'
+        dialog = $modal({template: '/partials/events/formDialog.html', show: true});
+        dialog.$scope.$on 'itemEdited', (event, newItem) ->
+          angular.extend(item, newItem)
+
 
     return

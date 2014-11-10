@@ -33,6 +33,7 @@ App.config ($routeProvider, $locationProvider) ->
     {
       db: ($q, $route, journaldb, storageService, $rootScope) ->
         defer = $q.defer()
+        journaldb.preloaded = {}
         journaldb.loadTables().then ->
           async.each otherFunctions, (func, callback) ->
             func(journaldb, $route).then -> 
@@ -82,8 +83,8 @@ App.config ($routeProvider, $locationProvider) ->
     itemId = parseInt($route.current.params.itemId, 10)
     db.memories().findById(itemId).then (item) ->
       db.preloaded.item = item
-      db.preloaded.events = []
-      db.preloaded.people = []
+      db.preloaded.events = null
+      db.preloaded.people = null
       db.preloaded.parentMemory = null
 
       promise1 = getResolvedPromise()
@@ -205,6 +206,16 @@ App.run ($rootScope, $location, $injector, $window, $timeout, storageService, us
   $rootScope.$on 'auth_fail', (event, failure) ->
     if failure.data.reason
       redirectOnFailure(failure.data)
+
+  modals = []
+  $rootScope.$on 'modal.show', (e, $modal) ->
+    if modals.indexOf($modal) == -1
+      modals.push($modal);
+    
+  $rootScope.$on '$routeChangeSuccess', ->
+    if modals.length
+      angular.forEach modals, ($modal) ->
+        $modal.$promise.then($modal.destroy);
 
   $rootScope.isActive = (urlPart) =>
     $location.path().indexOf(urlPart) > 0

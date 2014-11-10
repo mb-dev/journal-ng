@@ -1,0 +1,11 @@
+.modal.fade.in(tabindex="-1", ng-controller="EventsShowController")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', ng-click="$hide()")
+          span(aria-hidden='true') &times;
+          span.sr-only Close
+        h4.modal-title {{item.title}}
+      .modal-body
+        .event_show.show_page
+          ng-include(src="'/partials/events/_show.html'")

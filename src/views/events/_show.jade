@@ -1,0 +1,34 @@
+.panel.panel-default.row
+  .panel-heading
+    .btns-parent.pull-right
+      a.btn.btn-default.btn-sm.edit(ng-click="editItem()", href='') Edit  
+      a.btn.btn-default.btn-sm.delete(ng-cick='deleteItem()', href='') Delete
+      a.delete(ng-href='/events/{{item.id}}', ng-show="isInDialog()") Navigate to event
+    h4.panel-title
+      |Event Details
+  .panel-body.as-prop-columns.col-xs-12
+    .row
+      .left-pane Date
+      .right-pane {{item.date | localDate}}
+    .row
+      .left-pane Categories
+      .right-pane {{item.categories | joinBy}}
+    .row
+      .left-pane Participants
+      .right-pane 
+        a(ng-repeat='person in participants', ng-href='/people/{{person.id}}')
+          {{person.name}}{{$last ? '' : ', '}}
+    .row
+      .col-xs-12(colspan='2', ng-bind-html="item.content | newline")
+
+a.btn.btn-primary.pull-right(ng-href='/memories/new?eventId={{item.id}}&returnto=/memories/{{item.id}}') Add
+h3.row Associated memories
+.list-group
+  a.list-group-item.fixed-row(ng-repeat='item in associatedMemories', ng-href="/memories/{{item.id}}")
+    span(ng-include="'/partials/memories/itemSmall.html'")      
+
+a.btn.btn-primary.pull-right(ng-href='/memories/addMention?eventId={{item.id}}') Add
+h3.row Mentioned memories
+.list-group
+  a.list-group-item.fixed-row(ng-repeat='item in mentionedMemories', ng-href="/memories/{{item.id}}")
+    span(ng-include="'/partials/memories/itemSmall.html'")
