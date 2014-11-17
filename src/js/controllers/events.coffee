@@ -50,7 +50,7 @@ angular.module('app.controllers')
         $scope.$hide()
       else
         eventDate = moment($scope.item.date)
-        $location.path($routeParams.returnto || '/journal/' + eventDate.format('YYYY/MM'))
+        $location.url($routeParams.returnto || '/journal/' + eventDate.format('YYYY/MM'))
 
     $scope.onSubmit = ->
       peopleMapper.toIdCollection($scope.item, 'participantIds')
@@ -71,7 +71,7 @@ angular.module('app.controllers')
       if $scope.isInDialog()
         $scope.$emit('editItem')
       else
-        $location.path("/events/#{$scope.item.id}/edit?returnto=#{$scope.currentLocation}")
+        $location.url("/events/#{$scope.item.id}/edit?returnto=#{$scope.currentLocation}")
 
     $scope.isInDialog = ->
       $scope.$hide?

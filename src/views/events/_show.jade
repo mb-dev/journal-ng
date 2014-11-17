@@ -2,7 +2,7 @@
   .panel-heading
     .btns-parent.pull-right
       a.btn.btn-default.btn-sm.edit(ng-click="editItem()", href='') Edit  
-      a.btn.btn-default.btn-sm.delete(ng-cick='deleteItem()', href='') Delete
+      a.btn.btn-default.btn-sm.delete(ng-click='deleteItem()', href='') Delete
       a.delete(ng-href='/events/{{item.id}}', ng-show="isInDialog()") Navigate to event
     h4.panel-title
       |Event Details

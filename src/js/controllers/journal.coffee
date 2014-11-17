@@ -28,10 +28,13 @@ angular.module('app.controllers')
       db.preloaded.item = item
       if type == 'events'
         dialog = $modal({template: '/partials/events/showDialog.html', show: true});
-      dialog.$scope.$on 'editItem', (event) ->
-        dialog.$scope.$destroy()
-        $timeout -> 
-          $scope.editItemUsingModal(type, item)
+      else
+        $location.url("/memories/#{item.id}")
+      if dialog
+        dialog.$scope.$on 'editItem', (event) ->
+          dialog.$scope.$destroy()
+          $timeout -> 
+            $scope.editItemUsingModal(type, item)
 
     $scope.editItemUsingModal = (type, item) ->
       db.preloaded.item = angular.copy(item)
