@@ -7,6 +7,7 @@ objectSelectizeConverter = (collection, displayAttr) ->
       item[attr] = item[attr].map (id) -> collectionById[id][displayAttr]
 
     toIdCollection: (item, attr) ->
+      return unless item[attr]
       item[attr] = item[attr].map (display) -> collectionByDisplayAttr[display].id
 
     allDisplayAttrs: ->

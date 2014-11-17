@@ -1,2 +1,5 @@
 ng-include(src="'/partials/common/memory_header.html'")
 .events_form.container
+  h2 {{title}}
+  ng-include(src="'/partials/events/_form.html'")
+  button.btn.btn-default(ng-click="onSubmit()") Submit

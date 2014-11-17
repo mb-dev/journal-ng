@@ -16,6 +16,7 @@ App = angular.module('app', [
   'angularMoment'
   'mgcrea.ngStrap'
   'checklist-model'
+  'monospaced.elastic'
 ])
 
 App.config ($routeProvider, $locationProvider) ->
@@ -39,13 +40,13 @@ App.config ($routeProvider, $locationProvider) ->
             func(journaldb, $route).then -> 
               callback()
             , (err) ->
-              console.log "Failed #{err}"
+              console.log "Failed #{err}", err.stack
           , (err) ->
             defer.resolve(journaldb)
           if storageService.isUserExists() and storageService.getEncryptionKey()
             authAndCheckData(Object.keys(journaldb.tables), journaldb, storageService, $rootScope)
         , (err) ->
-          console.log "error loading"
+          console.log "error loading", err.stack
           defer.reject(err)
         defer.promise
     }

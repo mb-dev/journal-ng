@@ -45,8 +45,12 @@ angular.module('app.controllers')
       $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date
 
     onSuccess = -> 
-      $scope.$emit('itemEdited', $scope.item)
-      $scope.$hide()
+      if $scope.$hide?
+        $scope.$emit('itemEdited', $scope.item)
+        $scope.$hide()
+      else
+        eventDate = moment($scope.item.date)
+        $location.path($routeParams.returnto || '/journal/' + eventDate.format('YYYY/MM'))
 
     $scope.onSubmit = ->
       peopleMapper.toIdCollection($scope.item, 'participantIds')
