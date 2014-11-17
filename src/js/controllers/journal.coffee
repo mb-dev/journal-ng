@@ -32,6 +32,7 @@ angular.module('app.controllers')
         $location.url("/memories/#{item.id}")
       if dialog
         dialog.$scope.$on 'editItem', (event) ->
+          dialog.$scope.$hide()
           dialog.$scope.$destroy()
           $timeout -> 
             $scope.editItemUsingModal(type, item)
