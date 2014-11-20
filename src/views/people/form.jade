@@ -8,8 +8,7 @@ ng-include(src="'/partials/common/memory_header.html'")
       .form-group
         label.col-xs-4.col-sm-2.control-label Categories
         .col-xs-8.col-sm-10
-          select(ng-model='item.categories', selectize="stringsWithCreate", multiple)
-            option(ng-repeat='category in allCategories', value='{{category}}', ng-selected="{{item.categories.indexOf(category) >= 0}}") {{category}}
+          input(type="string", ng-model='item.categories', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
       .form-group
         label.col-xs-4.col-sm-2.control-label Name
         .col-xs-8.col-sm-10
@@ -17,8 +16,7 @@ ng-include(src="'/partials/common/memory_header.html'")
       .form-group
         label.col-xs-4.col-sm-2.control-label Interests
         .col-xs-8.col-sm-10
-          select(ng-model='item.interests', selectize="stringsWithCreate", multiple)
-            option(ng-repeat='category in allCategories', value='{{category}}', ng-selected="{{item.interests.indexOf(category) >= 0}}") {{category}}
+          input(type="string", ng-model='item.interests', selectize="stringsWithCreate", multiple, all-items="{{allCategories}}")
       .form-group
         label.col-xs-4.col-sm-2.control-label Work
         .col-xs-8.col-sm-10
