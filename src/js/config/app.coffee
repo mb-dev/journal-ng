@@ -84,41 +84,11 @@ App.config ($routeProvider, $locationProvider) ->
     itemId = parseInt($route.current.params.itemId, 10)
     db.memories().findById(itemId).then (item) ->
       db.preloaded.item = item
-      db.preloaded.events = null
-      db.preloaded.people = null
-      db.preloaded.parentMemory = null
-
-      promise1 = getResolvedPromise()
-      promise2 = getResolvedPromise()
-      promise3 = getResolvedPromise()
-
-      if item.events and item.events.length > 0
-        promise1 = db.events().findByIds(item.events).then (events) ->
-          db.preloaded.events = events
-      
-      if item.people and item.people.length > 0
-        promise2 = db.people().findByIds(item.people).then (people) ->
-          db.preloaded.associatedPeople = people
-
-      if item.parentMemoryId
-        promise3 = db.memories().findById(item.parentMemoryId).then (memory) ->
-          db.preloaded.parentMemory = memory
-
-      RSVP.all([promise1, promise2])
 
   loadEvent = (db, $route) ->
     itemId = parseInt($route.current.params.itemId, 10)
     db.events().findById(itemId).then (item) ->
       db.preloaded.item = item
-      db.preloaded.participants = []
-
-      promise1 = getResolvedPromise()
-
-      if item.participantIds and item.participantIds.length > 0
-        promise1 = db.people().findByIds(item.participantIds).then (people) ->
-          db.preloaded.participants = people
-
-      RSVP.all([promise1])
 
   loadPerson = (db, $route) ->
     itemId = parseInt($route.current.params.itemId, 10)

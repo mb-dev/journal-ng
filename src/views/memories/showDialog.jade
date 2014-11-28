@@ -1,0 +1,11 @@
+.modal.fade.in(tabindex="-1", ng-controller="MemoriesShowController")
+  .modal-dialog
+    .modal-content
+      .modal-header
+        button.close(type='button', ng-click="$hide()")
+          span(aria-hidden='true') &times;
+          span.sr-only Close
+        h4.modal-title {{item.title}}
+      .modal-body
+        .memories_show.show_page
+          ng-include(src="'/partials/memories/_show.html'")

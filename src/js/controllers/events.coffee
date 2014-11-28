@@ -61,20 +61,18 @@ angular.module('app.controllers')
   .controller 'EventsShowController', ($scope, $routeParams, $location, journaldb) ->
     db = journaldb
     $scope.item = db.preloaded.item
-    $scope.participants = db.preloaded.participants
+    db.people().findByIds($scope.item.participantIds or []).then (people) -> $scope.$apply ->
+      $scope.participants = people
     db.memories().getItemsByEventId($scope.item.id).then (associatedMemories) -> $scope.$apply ->
       $scope.associatedMemories = associatedMemories
     db.memories().getMemoriesMentionedAtEventId($scope.item.id).then (mentionedMemories) -> $scope.$apply ->
       $scope.mentionedMemories = mentionedMemories
 
     $scope.editItem = ->
-      if $scope.isInDialog()
+      if $scope.$hide?
         $scope.$emit('editItem')
       else
         $location.url("/events/#{$scope.item.id}/edit?returnto=#{$scope.currentLocation}")
-
-    $scope.isInDialog = ->
-      $scope.$hide?
 
     $scope.deleteItem = () ->
       db.events().deleteById($scope.item.id)

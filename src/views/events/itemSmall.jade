@@ -2,4 +2,5 @@ span.col-90
   i.fa.fa-calendar.fa-fw.fa-sr
   {{item.date | monthDay}}
 span.rest-90
-   {{item.title}}
+  span.label.label-info.hidden-inline-xs.space-right-xs(ng-if='item.categories.length > 0') {{item.categories | joinBy}}
+  {{item.title}}

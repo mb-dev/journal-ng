@@ -6,7 +6,7 @@ ng-include(src="'/partials/common/memory_header.html'")
     a.col-xs-3.next_month(ng-click='nextMonth()', href='#') Next &gt;&gt;
     
   .new.row.btn-toolbar.top
-    a.btn.btn-primary.add_event(ng-href='/events/new?date={{currentDate.valueOf()}}') Add Event  
+    a.btn.btn-primary.add_event(ng-click='newEventUsingModal()') Add Event  
     a.btn.btn-primary.add_memory(ng-click='newMemoryUsingModal()') Add Memory
 
   .main_list.list-group.compact-list.row

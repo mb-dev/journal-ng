@@ -21,7 +21,7 @@ angular.module('app.controllers')
       $scope.currentDate.year(+$routeParams.year).month(+$routeParams.month - 1)
 
     db.memories().getItemsByMonthYear($scope.currentDate.month(), $scope.currentDate.year()).then (memories) -> $scope.$apply ->
-      $scope.items = memories
+      $scope.items = memories.reverse()
     $scope.nextMonth = ->
       $scope.currentDate.add(1, 'months')
       $location.path('/memories/' + $scope.currentDate.year().toString() + '/' + ($scope.currentDate.month()+1).toString())
@@ -84,16 +84,39 @@ angular.module('app.controllers')
       .then -> updateFunc($scope.item)
       .then -> db.saveTables([db.tables.memories, db.tables.categories]).then(onSuccess, errorReporter.errorCallbackToScope($scope))
 
-  .controller 'MemoriesShowController', ($scope, $routeParams, db, $location) ->
+  .controller 'MemoriesShowController', ($scope, $routeParams, journaldb, $location) ->
+    db = journaldb
     $scope.item = db.preloaded.item
-    $scope.people = db.preloaded.associatedPeople
-    $scope.events = db.preloaded.events
-    $scope.parentMemory = db.preloaded.parentMemory
-    db.memories().getItemsByParentMemoryId($scope.item.id).then (childMemories) -> $scope.$apply ->
-      $scope.childMemories = childMemories
+
+    loadPeople = ->
+      db.people().findByIds($scope.item.people or []).then (people) ->
+        db.preloaded.associatedPeople = people
+
+    loadParentMemory = ->
+      db.memories().findById($scope.item.parentMemoryId).then (memory) ->
+        db.preloaded.parentMemory = memory
+
+    loadChildMemories = ->
+      db.memories().getItemsByParentMemoryId($scope.item.id).then (childMemories) ->
+        db.preloaded.childMemories = childMemories
+
+    loadEvents = ->
+      db.events().findByIds($scope.item.events or []).then (events) ->
+        db.preloaded.events = events
+
+    loadPeople().then(loadEvents).then(loadParentMemory).then(loadChildMemories).then -> $scope.$apply ->
+      $scope.people = db.preloaded.associatedPeople
+      $scope.events = db.preloaded.events
+      $scope.parentMemory = db.preloaded.parentMemory
+      $scope.childMemories = db.preloaded.childMemories
+
+    $scope.editItem = ->
+      if $scope.$hide?
+        $scope.$emit('editItem')
+      else
+        $location.url("/memories/#{$scope.item.id}/edit?returnto=#{$scope.currentLocation}")      
 
     $scope.deleteItem = ->
-
       # delete child memory
       deleteChildPromises = $scope.childMemories.map (childMemory) ->
         db.memories().deleteById(childMemory.id)
