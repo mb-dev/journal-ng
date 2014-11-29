@@ -18,8 +18,8 @@ ng-include(src="'/partials/common/memory_header.html'")
     .list-group-item(ng-repeat='memory in availableMemories')
       .col-xs-4.col-md-1
         a.btn.btn-default.btn-xs.edit(ng-click='associateMemory(memory.id, memory, $index)') Associate 
-      a.col-xs-6.col-md-11(ng-href='/memories/{{memory.id}}')
-        {{memory.date | localDate}}
+      a.col-xs-6.col-md-11(ng-href='/memories/{{::memory.id}}')
+        {{::memory.date | localDate}}
         &nbsp; &dash; &nbsp;
-        {{memory.title}}         
+        {{::memory.title}}         
   a.btn.btn-primary.pull-right(ng-click='saveChanges()') Save Changes
