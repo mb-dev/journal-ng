@@ -25,12 +25,14 @@ angular.module('app.controllers')
     
     $scope.newEventUsingModal = ->
       db.preloaded.item = null
+      db.preloaded.activeDate = $scope.currentDate.valueOf()
       dialog = $modal({template: '/partials/events/formDialog.html', show: true})
       dialog.$scope.$on 'itemEdited', (event) ->
         refresh()
 
     $scope.newMemoryUsingModal = ->      
       db.preloaded.item = null
+      db.preloaded.activeDate = $scope.currentDate.valueOf()
       dialog = $modal({template: '/partials/memories/formDialog.html', show: true})
       dialog.$scope.$on 'itemEdited', (event) ->
         refresh()

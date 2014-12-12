@@ -39,7 +39,7 @@ angular.module('app.controllers')
       updateFunc = db.events().updateById
     else
       $scope.title = 'New event'
-      $scope.item = {date: moment().valueOf(), associatedMemories: []}
+      $scope.item = {date: db.preloaded.activeDate or moment().valueOf(), associatedMemories: []}
       updateFunc = db.events().insert
       $scope.item.participantIds = [parseInt($routeParams.personId, 10)] if $routeParams.personId
       $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date

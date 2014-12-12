@@ -51,7 +51,7 @@ angular.module('app.controllers')
     else
       $scope.type = 'new'
       $scope.title = 'New memory'
-      $scope.item = {date: moment().valueOf()}
+      $scope.item = {date: db.preloaded.activeDate or moment().valueOf()}
       updateFunc = db.memories().insert
       $scope.item.people = parseInt($routeParams.personId, 10) if $routeParams.personId
       $scope.item.date = parseInt($routeParams.date, 10) if $routeParams.date
