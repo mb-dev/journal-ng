@@ -1,0 +1,45 @@
+script(type='text/javascript').
+  function initializeMaps() {
+    $('ng-view').scope().initializeMaps();
+  }
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyB4JlvkqKd5txRnF4pPUB4Z3QVm3p5-z_4&libraries=places&' +
+      'callback=initializeMaps';
+  document.body.appendChild(script);
+div.container.maps-index(style="display: flex; flex-direction: row;")
+  div#days
+    div.day(ng-repeat="day in days", ng-class="{active: day.number == currentDay.number}")
+      h2() 
+        a(ng-click="selectDay(day)", href="") Day {{day.number}}
+        span {{dateAt(day)}}
+      div.change-day
+        | Change Day:
+        a.fa.fa-angle-up(href="", ng-click="moveDay(day, -1)")
+        a.fa.fa-angle-down(href="", ng-click="moveDay(day, 1)")
+        a.fa.fa-remove(href="", ng-confirm-click="Are you sure you want to delete Day {{day.number}}?", confirmed-click='deleteDay(day)')
+      div
+        {{day.centerLocation.name}}
+      
+      ul.points
+        li.point(ng-repeat="point in day.points")
+          a.fa.fa-remove(href="", ng-click="deletePoint(day, point)")
+          a.fa.fa-angle-double-up(href="", ng-click="movePointDay(day, point, -1)")
+          a.fa.fa-angle-up(href="", ng-click="movePoint(day, point, -1)")
+          a.fa.fa-angle-down(href="", ng-click="movePoint(day, point, 1)")
+          a.fa.fa-angle-double-down(href="", ng-click="movePointDay(day, point, 1)")
+          | |
+          {{point.name}}
+  div#map-area
+    form.form-inline
+      .form-group
+        label Search: &nbsp;
+        input.form-control.add-to-day#autocomplete(type="text", style="margin: 15px 0; width: 400px")
+      .form-group
+        | &nbsp; 
+        input.btn.btn-primary(type="button", value="Add to day {{currentDay.number}}", ng-click="addToDay()", ng-disabled='!validPlace')
+        | &nbsp; 
+        input.btn.btn-default.set-on-day(type="button", value="Set on day {{currentDay.number}}", ng-click="setOnDay()", ng-disabled='!validPlace')
+        | &nbsp; 
+        button.btn.btn-default(ng-click="addDay()", ng-disabled='!validPlace') Add Day
+    div#map-canvas(style="height: 600px; flex: 1")

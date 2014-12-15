@@ -131,6 +131,8 @@ App.config ($routeProvider, $locationProvider) ->
 
     .when('/todo/', {templateUrl: '/partials/todo/index.html', controller: 'ToDoIndexController', reloadOnSearch: false })
 
+    .when('/maps/', {templateUrl: '/partials/maps/index.html', controller: 'MapsIndexController'})
+
     .when('/login_success', template: 'Loading...', controller: 'LoginOAuthSuccessController')
     .when('/key', {templateUrl: '/partials/user/key.html', controller: 'UserKeyController', resolve:  loadIdbCollections() })
     .when('/profile', {templateUrl: '/partials/user/profile.html', controller: 'UserProfileController', resolve:  loadIdbCollections() })

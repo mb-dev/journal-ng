@@ -19,3 +19,58 @@
     }
   }
 }
+
+.maps-index {
+  a.fa-remove {
+    color: #c9302c;
+  }
+  a:hover {
+    text-decoration: none;
+  }
+  #days {
+    width: 200px; 
+    flex: 0 0 329px;
+    margin-right: 20px;
+
+    .day {
+      h2 {
+        span {
+          float: right;
+        }
+      }
+      .change-day {
+        float: right;
+        display:  none;
+        a {
+          margin: 0 3px;
+        }
+      }
+      &.active {
+        h2 {
+          color: #6666CC;
+          text-decoration: underline;  
+        }
+        .change-day {
+          display:  block;
+        }
+      }
+    }
+  }
+  #map-area {
+    flex: 1;
+  }
+  .points {
+    list-style: none;
+    padding-left: 0;
+    .point {
+      a {
+        margin: 0 5px;
+      }
+      &:hover {
+        a {
+          display: inline-block;
+        }
+      }
+    }
+  }
+}
