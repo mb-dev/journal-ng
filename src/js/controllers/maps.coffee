@@ -39,6 +39,8 @@ angular.module('app.controllers')
 
       marker = new google.maps.Marker
         draggable: true
+    if google?
+      $scope.initializeMaps()
 
     refreshCenterMaps = ->
       map.setCenter($scope.currentDay.centerLocation)

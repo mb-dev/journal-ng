@@ -1,6 +1,8 @@
 script(type='text/javascript').
   function initializeMaps() {
-    $('ng-view').scope().initializeMaps();
+    if($('ng-view').scope().initializeMaps) {
+      $('ng-view').scope().initializeMaps();
+    }
   }
   var script = document.createElement('script');
   script.type = 'text/javascript';
