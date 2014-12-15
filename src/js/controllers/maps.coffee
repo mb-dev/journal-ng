@@ -1,5 +1,5 @@
 angular.module('app.controllers')
-  .controller 'MapsIndexController', ($scope, $routeParams, $location, godoClient, $modal) ->
+  .controller 'MapsIndexController', ($scope, $routeParams, $location, $modal) ->
     directionsService = directionsDisplay = autocomplete = map = marker = null
 
     $scope.tripStart = moment(new Date(2014, 12-1, 19))
