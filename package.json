@@ -21,9 +21,8 @@
     "gulp-sourcemaps": "1.2.8",
     "gulp-util": "~3.0.1",
     "gulp-plumber": "^0.6.6",
-    "gulp-notify": "^2.0.1"
+    "gulp-notify": "^2.0.1",
+    "gulp-sane-watch": "0.0.6"
   },
-  "devDependencies": {
-    
-  }
+  "devDependencies": {}
 }

@@ -36,12 +36,15 @@ div.container.maps-index(style="display: flex; flex-direction: row;")
     form.form-inline
       .form-group
         label Search: &nbsp;
-        input.form-control.add-to-day#autocomplete(type="text", style="margin: 15px 0; width: 400px")
+        input.form-control.add-to-day#autocomplete(type="text", style="margin: 15px 0; width: 368px")
       .form-group
         | &nbsp; 
-        input.btn.btn-primary(type="button", value="Add to day {{currentDay.number}}", ng-click="addToDay()", ng-disabled='!validPlace')
+        a.btn.btn-primary(type="button", ng-click="search()")
+          i.fa.fa-search
         | &nbsp; 
-        input.btn.btn-default.set-on-day(type="button", value="Set on day {{currentDay.number}}", ng-click="setOnDay()", ng-disabled='!validPlace')
+        a.btn.btn-default(ng-click="addToDay()", ng-disabled='!validPlace') Add to day {{currentDay.number}}
         | &nbsp; 
-        button.btn.btn-default(ng-click="addDay()", ng-disabled='!validPlace') Add Day
+        a.btn.btn-default.set-on-day(ng-click="setOnDay()", ng-disabled='!validPlace') Set on day {{currentDay.number}}
+        | &nbsp; 
+        a.btn.btn-default(ng-click="addDay()", ng-disabled='!validPlace') Add Day
     div#map-canvas(style="height: 600px; flex: 1")

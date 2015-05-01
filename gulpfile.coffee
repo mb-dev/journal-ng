@@ -11,6 +11,7 @@ debug = require('gulp-debug');
 sourcemaps = require('gulp-sourcemaps')
 plumber = require('gulp-plumber')
 notify = require("gulp-notify")
+saneWatch = require('gulp-sane-watch')
 
 paths = {}
 paths.scripts = [
@@ -66,9 +67,9 @@ gulp.task 'server', (e) ->
   server = spawn "coffee", ["server.coffee"], {cwd: process.cwd()}
             
 gulp.task 'watch', ->
-  gulp.watch(paths.scripts, ['build-js']);
-  gulp.watch(paths.styles, ['build-css']);
-  gulp.watch(paths.views, ['build-views']);
+  saneWatch paths.scripts, {debounce: 300}, -> gulp.start 'build-js'
+  saneWatch paths.styles, {debounce: 300}, -> gulp.start 'build-css'
+  saneWatch paths.views, {debounce: 300}, -> gulp.start 'build-views'
 
 gulp.task 'build', ['copy-core', 'build-js', 'build-css', 'build-views']
 gulp.task 'start', ['build', 'watch']

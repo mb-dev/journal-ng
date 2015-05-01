@@ -1,8 +1,90 @@
 angular.module('app.controllers')
   .controller 'MapsIndexController', ($scope, $routeParams, $location, $modal) ->
-    directionsService = directionsDisplay = autocomplete = map = marker = null
-
     $scope.tripStart = moment(new Date(2014, 12-1, 19))
+
+    googleMapsService = (->
+      directionsService = directionsDisplay = autocomplete = map = marker = null
+
+      events = {
+        onPlaceChanged: ->
+          console.log 'place changed'
+      }
+
+      initializeMaps: ->
+        mapOptions = {
+          center: $scope.currentDay.centerLocation,
+          zoom: 8
+        };
+
+        map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+        directionsDisplay = new google.maps.DirectionsRenderer();
+        directionsService = new google.maps.DirectionsService();
+        directionsDisplay.setMap(map);
+
+        refreshDirections()
+
+        autocomplete = new google.maps.places.Autocomplete(document.getElementById('autocomplete'))
+        autocomplete.setBounds(map.getBounds())
+        google.maps.event.addListener(autocomplete, 'place_changed', events.onPlaceChanged);
+
+        marker = new google.maps.Marker
+          draggable: true
+
+      # auto complete
+
+      isPlaceSelected: ->
+        place = autocomplete.getPlace()
+        place?
+
+      getPointFromAutoComplete: ->
+        place = autocomplete.getPlace()
+        lat: place.geometry.location.lat(), lng: place.geometry.location.lng()
+
+      getNameFromAutoComplete: ->
+        place = autocomplete.getPlace()
+        place.name
+
+      # map
+      displayPointOnMap: (point) ->
+        marker.setPosition(new google.maps.LatLng(point.lat, point.lng))
+        marker.setMap(map)
+
+      panToPoint: ->
+        map.panTo(marker.getPosition())
+
+      clearPoint: ->
+        marker.setMap(null)
+
+      refreshCenterMap: (centerPoint) ->
+        map.setCenter(centerPoint)
+        setTimeout ->
+          autocomplete.setBounds(map.getBounds())
+        , 0
+
+      # directions
+      clearDirections: ->
+        directionsDisplay.set('directions', null)
+
+      displayDirections: (points) ->
+        length = points.length
+        start = points[0]
+        end = points[length-1]
+        request = {
+          origin: new google.maps.LatLng(start.lat, start.lng)
+          destination: new google.maps.LatLng(end.lat, end.lng)
+          travelMode: google.maps.DirectionsTravelMode.DRIVING
+        };
+        if length > 2
+          request.waypoints = []
+          for waypoint in points[1..-2]
+            request.waypoints.push(location: new google.maps.LatLng(waypoint.lat, waypoint.lng))
+        directionsService.route request, (response, status) ->
+          if (status == google.maps.DirectionsStatus.OK)
+            directionsDisplay.setDirections(response)
+
+      events: events
+    )()
 
     $scope.days = [
       {number: 1, centerLocation: {name: 'Phuket', lat: 7.953951, lng: 98.346883}, points: [
@@ -19,83 +101,61 @@ angular.module('app.controllers')
     $scope.currentDay = $scope.days[0]
     $scope.validPlace = false
 
-    $scope.initializeMaps = -> $scope.$apply ->
-      mapOptions = {
-        center: $scope.currentDay.centerLocation,
-        zoom: 8
-      };
-     
-      map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions); 
-
-      directionsDisplay = new google.maps.DirectionsRenderer();
-      directionsService = new google.maps.DirectionsService();
-      directionsDisplay.setMap(map);
-
-      refreshDirections()
-
-      autocomplete = new google.maps.places.Autocomplete(document.getElementById('autocomplete'))
-      autocomplete.setBounds(map.getBounds())
-      google.maps.event.addListener(autocomplete, 'place_changed', onPlaceChanged);
-
-      marker = new google.maps.Marker
-        draggable: true
     if google?
-      $scope.initializeMaps()
+      googleMapsService.initializeMaps()
 
-    refreshCenterMaps = ->
-      map.setCenter($scope.currentDay.centerLocation)
-      autocomplete.setBounds(map.getBounds())
+    refreshCenterMap = ->
+      googleMapsService.refreshCenterMap($scope.currentDay.centerLocation)
 
     refreshDirections = ->
       if $scope.currentDay.points.length == 0
-        directionsDisplay.set('directions', null)
-        marker.setMap(null)
+        googleMapsService.clearDirections()
+        googleMapsService.clearPoint()
         return
       if $scope.currentDay.points.length == 1
-        position = $scope.currentDay.points[0]
-        marker.setPosition(new google.maps.LatLng(position.lat, position.lng))
-        marker.setMap(map)
-        directionsDisplay.set('directions', null)
+        point = $scope.currentDay.points[0]
+        googleMapsService.displayPointOnMap(point)
+        googleMapsService.clearDirections()
         return
-      length = $scope.currentDay.points.length
-      start = $scope.currentDay.points[0]
-      end = $scope.currentDay.points[length-1]
-      request = {
-        origin: new google.maps.LatLng(start.lat, start.lng)
-        destination: new google.maps.LatLng(end.lat, end.lng)
-        travelMode: google.maps.DirectionsTravelMode.DRIVING
-      };
-      if length > 2
-        request.waypoints = []
-        for waypoint in $scope.currentDay.points[1..-2]
-          request.waypoints.push(location: new google.maps.LatLng(waypoint.lat, waypoint.lng))
-      directionsService.route request, (response, status) ->
-        if (status == google.maps.DirectionsStatus.OK)
-          directionsDisplay.setDirections(response)
+      googleMapsService.displayDirections($scope.currentDay.points)
 
-    onPlaceChanged = -> $scope.$apply ->
-      place = autocomplete.getPlace();
-      $scope.validPlace = place?
+    googleMapsService.events.onPlaceChanged = ->
+      $scope.$apply ->
+        $scope.validPlace = googleMapsService.isPlaceSelected()
+        $scope.search()
+
+    $scope.initializeMaps = -> $scope.$apply ->
+      if google?
+        googleMapsService.initializeMaps()
 
     $scope.setOnDay = ->
-      place = autocomplete.getPlace();
+      place = autocomplete.getPlace()
       $scope.currentDay.centerLocation = place.geometry.location
       $scope.currentDay.centerLocation.name = place.name
       refreshCenterMap()
 
+    $scope.search = ->
+      point = googleMapsService.getPointFromAutoComplete()
+      return unless point.lat and point.lng
+      googleMapsService.displayPointOnMap(point)
+      setTimeout ->
+        googleMapsService.panToPoint()
+      , 100
+
     $scope.addToDay = ->
-      place = autocomplete.getPlace();
-      point = {lat: place.geometry.location.k, lng: place.geometry.location.D, name: place.name}
+      point = googleMapsService.getPointFromAutoComplete()
+      point.name = googleMapsService.getNameFromAutoComplete()
       $scope.currentDay.points.push(point)
       refreshDirections()
 
     $scope.addDay = ->
-      place = autocomplete.getPlace();
-      $scope.days.push({number: $scope.days.length+1, centerLocation: {lat: place.geometry.location.k, lng: place.geometry.location.D, name: place.name}, points: []})
+      point = googleMapsService.getPointFromAutoComplete()
+      point.name = googleMapsService.getNameFromAutoComplete()
+      $scope.days.push({number: $scope.days.length+1, centerLocation: point, points: []})
 
     $scope.selectDay = (day) ->
       $scope.currentDay = day
-      refreshCenterMaps()
+      refreshCenterMap()
       refreshDirections()
 
     $scope.movePoint = (day, point, direction) ->

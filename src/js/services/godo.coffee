@@ -1,6 +1,7 @@
  angular.module('app.services')
   .factory 'godoClient', ($q, storageService, $http, $location, userService) ->
     tasks = []
+    trips = []
     godoServerUrl = if $location.host().indexOf('local.com') >= 0
       'http://localhost:9000/api/godo'
     else if location.host().indexOf('vagrant.com') >= 0
@@ -23,6 +24,22 @@
           task
     }
 
+    tripsAPI = {
+      fetch: =>
+        $http.get(godoServerUrl + '/trips', authorizationHeaders).then (results) ->
+          trips = results.data
+          trips
+      create: (trip) ->
+        $http.post(godoServerUrl + '/trips', task, authorizationHeaders).then (results) ->
+          trips.push(results.data)
+      update: (trip) ->
+        $http.put(godoServerUrl + '/trips/' + task.id, task, authorizationHeaders).then (results) ->
+          angular.extend(trip, results.data)
+          trip
+
+    }
+
     return {
       tasks: tasksAPI
+      trips: tripsAPI
     }
