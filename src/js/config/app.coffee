@@ -37,7 +37,7 @@ App.config ($routeProvider, $locationProvider) ->
         journaldb.preloaded = {}
         journaldb.loadTables().then ->
           async.each otherFunctions, (func, callback) ->
-            func(journaldb, $route).then -> 
+            func(journaldb, $route).then ->
               callback()
             , (err) ->
               console.log "Failed #{err}", err.stack
@@ -94,7 +94,7 @@ App.config ($routeProvider, $locationProvider) ->
     itemId = parseInt($route.current.params.itemId, 10)
     db.people().findById(itemId).then (item) ->
       db.preloaded.item = item
-  
+
   $routeProvider
     .when('/', {templateUrl: '/partials/home/welcome.html', controller: 'WelcomePageController', resolve: loadIdbCollections()})
 
@@ -162,10 +162,10 @@ App.run ($rootScope, $location, $injector, $window, $timeout, storageService, us
   $rootScope.$on "$routeChangeError", (event, current, previous, rejection) ->
     if rejection.data.reason
       redirectOnFailure(rejection.data)
-  
+
   $rootScope.$on '$routeChangeStart', ->
     $rootScope.currentLocation = $location.path()
-    
+
     if storageService.getSuccessMsg()
       $rootScope.successMsg = storageService.getSuccessMsg()
     if storageService.getNoticeMsg()
@@ -184,7 +184,7 @@ App.run ($rootScope, $location, $injector, $window, $timeout, storageService, us
   $rootScope.$on 'modal.show', (e, $modal) ->
     if modals.indexOf($modal) == -1
       modals.push($modal);
-    
+
   $rootScope.$on '$routeChangeSuccess', ->
     if modals.length
       angular.forEach modals, ($modal) ->

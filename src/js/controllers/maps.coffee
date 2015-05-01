@@ -2,8 +2,27 @@ angular.module('app.controllers')
   .controller 'MapsIndexController', ($scope, $routeParams, $location, $modal) ->
     $scope.tripStart = moment(new Date(2014, 12-1, 19))
 
+    storageService = (->
+
+      initializeStorage: ->
+        ref = new Firebase("boiling-torch-8739.firebaseio.com/trips")
+
+
+        ref.authWithOAuthPopup "google", (error, authData) ->
+          if error
+            console.log("Authentication failed:", error);
+          else
+            console.log("Logged in as:", authData.uid)
+
+        ref.on 'value', (snapshot) ->
+          $scope.days = snapshot.val()
+          if !$scope.days or $scope.days.length == 0
+            $scope.days = defaultDays
+            ref.set(defaultDays)
+    )()
+
     googleMapsService = (->
-      directionsService = directionsDisplay = autocomplete = map = marker = null
+      firebaseRef = directionsService = directionsDisplay = autocomplete = map = marker = null
 
       events = {
         onPlaceChanged: ->
@@ -12,7 +31,7 @@ angular.module('app.controllers')
 
       initializeMaps: ->
         mapOptions = {
-          center: $scope.currentDay.centerLocation,
+          #center: $scope.currentDay.centerLocation,
           zoom: 8
         };
 
@@ -86,7 +105,7 @@ angular.module('app.controllers')
       events: events
     )()
 
-    $scope.days = [
+    defaultDays = [
       {number: 1, centerLocation: {name: 'Phuket', lat: 7.953951, lng: 98.346883}, points: [
         {"lat":7.892256,"lng":98.295702,"name":"Patong Beach"},
         {"lat":7.8063168,"lng":98.29900709999993,"name":"Kata Noi Beach"}]
@@ -98,16 +117,21 @@ angular.module('app.controllers')
         {"lat":18.79841,"lng":98.96876500000008,"name":"Librarista"}
       ]}
     ]
+
+    $scope.days = []
+
     $scope.currentDay = $scope.days[0]
     $scope.validPlace = false
 
     if google?
       googleMapsService.initializeMaps()
+      storageService.initializeStorage()
 
     refreshCenterMap = ->
       googleMapsService.refreshCenterMap($scope.currentDay.centerLocation)
 
     refreshDirections = ->
+      return unless $scope.currentDay
       if $scope.currentDay.points.length == 0
         googleMapsService.clearDirections()
         googleMapsService.clearPoint()
@@ -127,6 +151,9 @@ angular.module('app.controllers')
     $scope.initializeMaps = -> $scope.$apply ->
       if google?
         googleMapsService.initializeMaps()
+
+    $scope.initializeStorage = -> $scope.$apply ->
+      storageService.initializeStorage()
 
     $scope.setOnDay = ->
       place = autocomplete.getPlace()

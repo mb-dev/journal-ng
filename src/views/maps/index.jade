@@ -2,6 +2,7 @@ script(type='text/javascript').
   function initializeMaps() {
     if($('ng-view').scope().initializeMaps) {
       $('ng-view').scope().initializeMaps();
+      $('ng-view').scope().initializeStorage();
     }
   }
   var script = document.createElement('script');
@@ -9,6 +10,8 @@ script(type='text/javascript').
   script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=places&' +
       'callback=initializeMaps';
   document.body.appendChild(script);
+script(type="text/javascript", src="https://cdn.firebase.com/js/client/2.2.4/firebase.js")
+script(type="text/javascript" src="https://cdn.firebase.com/libs/angularfire/1.0.0/angularfire.min.js")
 div.container.maps-index(style="display: flex; flex-direction: row;")
   div#days
     div.day(ng-repeat="day in days", ng-class="{active: day.number == currentDay.number}")
